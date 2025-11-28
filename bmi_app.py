@@ -24,20 +24,31 @@ st.markdown("""
         border-color: #41444C !important;
     }
     
-    /* --- MOBILE GRID SYSTEM FOR INPUTS --- */
-    /* This simulates a Grid System for Streamlit Columns on Mobile */
+    /* --- FORCE MOBILE SIDE-BY-SIDE LAYOUT --- */
     @media (max-width: 768px) {
+        /* Force the container to be a row, not a column */
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 10px !important; /* Reduce gap to fit better */
+        }
+        
+        /* Force columns to behave like flex items, not full-width blocks */
         div[data-testid="column"] {
-            width: 50% !important;
+            width: auto !important;
             flex: 1 1 auto !important;
+            min-width: 0px !important; /* Crucial: allows shrinking */
+        }
+        
+        /* Fix input spacing inside the columns */
+        .stNumberInput div[data-baseweb="input"] {
             min-width: 0px !important;
         }
-        /* Adjust spacing for small screens */
-        div[data-testid="column"] > div {
-            width: 100% !important;
-        }
-        .stNumberInput input {
-            padding-right: 0px !important; 
+        /* Hide overlapping arrows in small number inputs if needed */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
     }
 
@@ -89,6 +100,14 @@ st.markdown("""
         white-space: pre-line;
     }
     
+    /* Grid Container for Mobile Cards (Results) */
+    .grid-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
     /* Button */
     div.stButton > button {
         background-color: #FFFFFF;
@@ -238,7 +257,7 @@ if calc:
     
     # --- 1. BMI & TDEE (HTML Grid - Side by Side guaranteed) ---
     st.markdown(f"""
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+    <div class="grid-container">
         <div class="pro-card" style="animation-delay: 0.1s;">
             <div class="metric-label">BMI Score</div>
             <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
@@ -268,7 +287,7 @@ if calc:
     dn_text = meals['Dinner'].replace('\n', '<br>')
 
     st.markdown(f"""
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="grid-container">
         <div class="pro-card" style="animation-delay: 0.4s;">
             <div class="metric-label" style="color: #4FC3F7;">Breakfast</div>
             <div class="meal-text">{bf_text}</div>
@@ -277,6 +296,9 @@ if calc:
             <div class="metric-label" style="color: #FFA726;">Lunch</div>
             <div class="meal-text">{ln_text}</div>
         </div>
+    </div>
+
+    <div class="grid-container">
         <div class="pro-card" style="animation-delay: 0.6s;">
             <div class="metric-label" style="color: #AB47BC;">Snacks</div>
             <div class="meal-text">{sn_text}</div>
