@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. Advanced CSS (Fixed & Optimized) ---
+# --- 2. Advanced CSS ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -24,7 +24,7 @@ st.markdown("""
     }
 
     /* --- MOBILE GRID FIX --- */
-    /* This forces Streamlit columns to be side-by-side on mobile */
+    /* Forces columns to be 50% width on mobile (Side-by-Side inputs) */
     @media (max-width: 640px) {
         div[data-testid="column"] {
             width: 50% !important;
@@ -68,7 +68,13 @@ st.markdown("""
     .metric-val { font-size: 26px; font-weight: 700; color: #FFF; }
     .metric-lbl { font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
     .meal-title { font-size: 11px; font-weight: 700; color: #AAA; text-transform: uppercase; margin-bottom: 6px; }
-    .meal-food { font-size: 13px; color: #FFF; font-weight: 500; line-height: 1.4; }
+    .meal-food { 
+        font-size: 13px; 
+        color: #FFF; 
+        font-weight: 500; 
+        line-height: 1.4; 
+        white-space: pre-line; /* Allows newlines to show */
+    }
 
     /* BUTTON */
     div.stButton > button {
@@ -81,7 +87,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Logic ---
+# --- 3. Logic & Helpers ---
 
 def get_metrics(weight, height_cm, age, gender, activity):
     bmi = weight / ((height_cm/100) ** 2)
@@ -118,9 +124,20 @@ def get_diet_plan(category):
             "Meals": {"Breakfast": "Veg Juice (Spinach)\n+ 2 Egg Whites", "Lunch": "1 Jowar Roti + Saag\n+ Cucumber Raita", "Snack": "Black Coffee + Almonds", "Dinner": "Lentil Soup (No Oil)\n+ Sautéed Veggies"}
         }
 
+# Helper to generate HTML safely (Prevents Syntax Errors)
+def make_meal_html(title, food, color, delay):
+    return f"""
+    <div class="pro-card" style="padding:0; border:none; background:transparent; margin-bottom:10px; animation-delay: {delay}s;">
+        <div class="meal-card" style="border-left-color: {color};">
+            <div class="meal-title">{title}</div>
+            <div class="meal-food">{food}</div>
+        </div>
+    </div>
+    """
+
 # --- 4. Main Layout ---
 
-# HTML Header (To avoid CSS Grid conflict)
+# HTML Header
 st.markdown("""
 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
     <div style="font-size: 40px;">🧬</div>
@@ -133,10 +150,7 @@ st.markdown("""
 
 st.markdown("---")
 
-# --- COMPACT INPUT GRID ---
-# We pack items tightly. The CSS above forces them to be 50% width on mobile (2 per row).
-# On Desktop, they will be 4 per row as defined below.
-
+# --- COMPACT INPUT GRID (2 per row on Mobile) ---
 c1, c2, c3, c4 = st.columns(4)
 with c1:
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -155,8 +169,8 @@ with c6:
     activity = st.selectbox("Activity Level", ["Sedentary", "Light Active", "Moderate Active", "Very Active"])
 with c7:
     st.write("") 
-    st.write("") # Spacer to push button down slightly
-    calc = st.button("GO") # Small button to fit in row
+    st.write("") 
+    calc = st.button("GO")
 
 # Calculation
 height_cm = (h_ft * 12 + h_in) * 2.54
@@ -173,4 +187,35 @@ if calc:
     st.markdown(f"""
     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
         <div class="pro-card" style="flex:1; text-align:center; padding:15px; animation-delay: 0.1s;">
-            <div class="metric
+            <div class="metric-lbl">BMI</div>
+            <div class="metric-val" style="color: {color}">{bmi:.1f}</div>
+            <div style="color:{color}; font-size:11px; font-weight:600">{cat}</div>
+        </div>
+        <div class="pro-card" style="flex:1; text-align:center; padding:15px; animation-delay: 0.2s;">
+            <div class="metric-lbl">TDEE</div>
+            <div class="metric-val">{tdee}</div>
+            <div style="color:#888; font-size:11px;">kcal/day</div>
+        </div>
+        <div class="pro-card" style="flex:1; text-align:center; padding:15px; animation-delay: 0.3s;">
+            <div class="metric-lbl">TARGET</div>
+            <div class="metric-val" style="color:#FFF">{target}</div>
+            <div style="color:#888; font-size:11px;">Goal</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 2. MEAL STACKS (Grid Layout)
+    st.markdown("#### 📅 Diet Plan")
+    m = plan['Meals']
+    
+    col_a, col_b = st.columns(2)
+    
+    with col_a:
+        st.markdown(make_meal_html("🍳 Breakfast", m['Breakfast'], "#FFD700", "0.4"), unsafe_allow_html=True)
+        st.markdown(make_meal_html("🍎 Snack", m['Snack'], "#FF6B6B", "0.5"), unsafe_allow_html=True)
+        
+    with col_b:
+        st.markdown(make_meal_html("🍛 Lunch", m['Lunch'], "#4FC3F7", "0.4"), unsafe_allow_html=True)
+        st.markdown(make_meal_html("🍲 Dinner", m['Dinner'], "#9575CD", "0.5"), unsafe_allow_html=True)
+
+st.markdown("<div style='text-align:center; color:#444; font-size:11px; margin-top:30px;'>NEON FIX / BROKENERD © 2025</div>", unsafe_allow_html=True)
