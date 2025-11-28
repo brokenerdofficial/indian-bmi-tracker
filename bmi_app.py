@@ -24,6 +24,30 @@ st.markdown("""
         border-color: #41444C !important;
     }
     
+    /* --- MOBILE COLUMN FIX --- */
+    /* This forces st.columns to stay side-by-side on mobile */
+    @media (max-width: 768px) {
+        div[data-testid="column"] {
+            width: 50% !important;
+            flex: 1 1 auto !important;
+            min-width: 0px !important;
+        }
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+        }
+        /* Adjust card padding/font for small screens */
+        .pro-card {
+            padding: 15px !important;
+        }
+        .metric-value {
+            font-size: 22px !important;
+        }
+        .metric-label {
+            font-size: 10px !important;
+        }
+    }
+
     /* Card Animation */
     @keyframes fadeInUp {
         from { opacity: 0; transform: translate3d(0, 20px, 0); }
