@@ -57,6 +57,7 @@ st.markdown("""
         border-radius: 16px;
         padding: 24px;
         margin-bottom: 16px;
+        height: 100%; /* Ensure equal height in grids */
         
         /* The White Box Shadow (Subtle Glow) */
         box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
@@ -91,6 +92,14 @@ st.markdown("""
         font-size: 14px;
         color: #888;
         margin-top: 4px;
+        line-height: 1.5;
+    }
+    
+    /* Meal Card Specific Text */
+    .meal-text {
+        color: #E0E0E0;
+        font-size: 15px;
+        font-weight: 500;
     }
 
     /* Button Styling */
@@ -160,25 +169,45 @@ def get_plan_text(category):
         return {
             "Goal": "Hypertrophy / Weight Gain",
             "Strategy": "Caloric Surplus (+300 kcal)",
-            "Diet": "Focus on calorie-dense whole foods. \n• Breakfast: Parathas with curd or Eggs with whole grain toast. \n• Lunch: Rice, Dal Tadka with Ghee, dense vegetables. \n• Dinner: Protein-rich curry (Chicken/Paneer) with Rotis."
+            "Meals": {
+                "Breakfast": "Parathas with curd or \nEggs with whole grain toast.",
+                "Lunch": "Rice, Dal Tadka with Ghee, \ndense vegetables.",
+                "Snacks": "Banana shake with nuts \nor Peanut Butter Toast.",
+                "Dinner": "Protein-rich curry (Chicken/Paneer) \nwith Rotis."
+            }
         }
     elif category == "Normal Range":
         return {
             "Goal": "Maintenance & General Health",
             "Strategy": "Maintenance Calories",
-            "Diet": "Balanced Macronutrients. \n• Breakfast: Poha/Upma with vegetables or Idli. \n• Lunch: Roti, Dal, Sabzi, Salad. \n• Dinner: Multigrain Roti with light vegetable curry."
+            "Meals": {
+                "Breakfast": "Poha/Upma with vegetables \nor Idli Sambar.",
+                "Lunch": "Roti, Dal, Sabzi, \nSmall portion of Rice.",
+                "Snacks": "Fruit (Apple/Papaya) \nor Roasted Chana.",
+                "Dinner": "Multigrain Roti with \nlight vegetable curry."
+            }
         }
     elif category == "Overweight":
         return {
             "Goal": "Fat Loss",
             "Strategy": "Caloric Deficit (-500 kcal)",
-            "Diet": "High Volume, Low Calorie. \n• Breakfast: Oats or Daliya (Porridge). \n• Lunch: 1-2 Rotis, boiled Dal, large portion of salad. \n• Dinner: Grilled protein salad or clear soup."
+            "Meals": {
+                "Breakfast": "Oats porridge (water/skim milk) \nor Daliya.",
+                "Lunch": "1-2 Rotis, boiled Dal, \nLarge portion of salad.",
+                "Snacks": "Green Tea and \nCucumber/Carrot sticks.",
+                "Dinner": "Grilled protein salad \nor Clear soup with veggies."
+            }
         }
     else: # Obese
         return {
             "Goal": "Aggressive Fat Loss",
             "Strategy": "Strict Deficit & Medical Management",
-            "Diet": "Low Carbohydrate / High Fiber. \n• Breakfast: Vegetable juice or Egg whites. \n• Lunch: Jowar Roti with leafy greens. \n• Dinner: Lentil soup. Avoid sugar and refined flour entirely."
+            "Meals": {
+                "Breakfast": "Vegetable juice \nor Egg whites (No Yolk).",
+                "Lunch": "Jowar Roti with \nLeafy greens (Palak/Methi).",
+                "Snacks": "Black Coffee / Green Tea \n(No sugar).",
+                "Dinner": "Lentil soup (Moong Dal water). \nAvoid solid carbs at night."
+            }
         }
 
 # --- 4. Main Layout ---
@@ -189,7 +218,6 @@ with col_logo:
     if os.path.exists("logo.png"):
         st.image("logo.png", width=80)
     else:
-        # Fallback text if no logo
         st.markdown("<h2 style='color:#FFF;'>NF</h2>", unsafe_allow_html=True)
 
 with col_title:
@@ -198,27 +226,26 @@ with col_title:
 
 st.markdown("---")
 
-# INPUT SECTION (Grid Layout - Mobile Friendly)
+# INPUT SECTION (Stacked Rows for Mobile/Compact View)
 st.markdown("#### Patient Details")
 
-c1, c2 = st.columns(2)
-with c1:
+# Row 1: Gender, Age, Weight
+r1_c1, r1_c2, r1_c3 = st.columns([1, 1, 1])
+with r1_c1:
     gender = st.selectbox("Gender", ["Male", "Female"])
+with r1_c2:
     age = st.number_input("Age", 10, 100, 25)
-
-with c2:
+with r1_c3:
     weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
-    # Height Logic (Simplified)
-    height_ft = st.number_input("Height (Feet)", 3, 8, 5)
-    
-c3, c4 = st.columns(2)
-with c3:
-    height_in = st.number_input("Height (Inches)", 0, 11, 7)
-    # Convert to CM immediately for logic
-    height_cm = (height_ft * 12 + height_in) * 2.54
-    height_m = height_cm / 100
 
-with c4:
+# Row 2: Height Ft, Height In, Activity
+# Activity gets slightly more space (flex 2)
+r2_c1, r2_c2, r2_c3 = st.columns([1, 1, 2])
+with r2_c1:
+    height_ft = st.number_input("Height (Ft)", 3, 8, 5)
+with r2_c2:
+    height_in = st.number_input("Height (In)", 0, 11, 7)
+with r2_c3:
     activity = st.selectbox("Activity Level", [
         "Sedentary (Office Job)",
         "Lightly Active (1-3 days)",
@@ -226,6 +253,10 @@ with c4:
         "Very Active (6-7 days)",
         "Extra Active (Physical Job)"
     ])
+
+# Logic for Height Calculation
+height_cm = (height_ft * 12 + height_in) * 2.54
+height_m = height_cm / 100
 
 st.markdown("<br>", unsafe_allow_html=True)
 calc = st.button("CALCULATE METRICS")
@@ -237,6 +268,7 @@ if calc:
     tdee = calculate_tdee(weight, height_cm, age, gender, activity)
     status, color_code = get_status(bmi)
     plan = get_plan_text(status)
+    meals = plan['Meals']
     
     if status in ["Overweight", "Obese"]: target_cals = tdee - 500
     elif status == "Underweight": target_cals = tdee + 300
@@ -244,7 +276,7 @@ if calc:
 
     st.markdown("---")
     
-    # RESULT CARDS (Using CSS Grid for Pro Look)
+    # RESULT CARDS (2 Top Cards)
     st.markdown(f"""
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div class="pro-card" style="animation-delay: 0.1s;">
@@ -253,27 +285,43 @@ if calc:
             <div class="metric-sub">{status}</div>
         </div>
         <div class="pro-card" style="animation-delay: 0.2s;">
-            <div class="metric-label">Maintenance (TDEE)</div>
+            <div class="metric-label">Maintenance</div>
             <div class="metric-value">{tdee}</div>
             <div class="metric-sub">kcal / day</div>
         </div>
     </div>
-    <div class="pro-card" style="margin-top: 0px; animation-delay: 0.3s;">
+    
+    <div class="pro-card" style="margin-top: 16px; animation-delay: 0.3s;">
         <div class="metric-label">Recommended Target</div>
         <div class="metric-value" style="color: #FFFFFF">{target_cals}</div>
-        <div class="metric-sub">kcal / day to reach goal</div>
+        <div class="metric-sub">kcal / day to reach goal ({plan['Goal']})</div>
     </div>
     """, unsafe_allow_html=True)
 
     # DIET PLAN SECTION
-    st.markdown("#### Clinical Recommendations")
+    st.markdown("#### Clinical Diet Recommendations")
     
+    # MEAL CARDS (Grid Layout for Meal Cards)
     st.markdown(f"""
-    <div class="pro-card" style="animation-delay: 0.4s;">
-        <h4 style="color: white; margin-top:0;">{plan['Goal']}</h4>
-        <p style="color: #AAA; font-size: 14px; margin-bottom: 20px;">Strategy: {plan['Strategy']}</p>
-        <div style="background-color: #262730; padding: 15px; border-radius: 8px; border-left: 4px solid {color_code};">
-            <p style="color: #DDD; white-space: pre-line; line-height: 1.6;">{plan['Diet']}</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px;">
+        <div class="pro-card" style="animation-delay: 0.4s;">
+            <div class="metric-label" style="color: #4FC3F7;">Breakfast</div>
+            <div class="meal-text">{meals['Breakfast']}</div>
+        </div>
+        
+        <div class="pro-card" style="animation-delay: 0.5s;">
+            <div class="metric-label" style="color: #FFA726;">Lunch</div>
+            <div class="meal-text">{meals['Lunch']}</div>
+        </div>
+        
+        <div class="pro-card" style="animation-delay: 0.6s;">
+            <div class="metric-label" style="color: #AB47BC;">Snacks</div>
+            <div class="meal-text">{meals['Snacks']}</div>
+        </div>
+        
+        <div class="pro-card" style="animation-delay: 0.7s;">
+            <div class="metric-label" style="color: #66BB6A;">Dinner</div>
+            <div class="meal-text">{meals['Dinner']}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
