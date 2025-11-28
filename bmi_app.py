@@ -24,31 +24,18 @@ st.markdown("""
         border-color: #41444C !important;
     }
     
-    /* --- FORCE MOBILE SIDE-BY-SIDE LAYOUT --- */
+    /* --- MOBILE COLUMN FIX (For Inputs) --- */
+    /* Forces st.columns to stay side-by-side (50% width) on small screens */
     @media (max-width: 768px) {
-        /* Force the container to be a row, not a column */
-        div[data-testid="stHorizontalBlock"] {
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            gap: 10px !important; /* Reduce gap to fit better */
-        }
-        
-        /* Force columns to behave like flex items, not full-width blocks */
         div[data-testid="column"] {
-            width: auto !important;
+            width: 50% !important;
             flex: 1 1 auto !important;
-            min-width: 0px !important; /* Crucial: allows shrinking */
-        }
-        
-        /* Fix input spacing inside the columns */
-        .stNumberInput div[data-baseweb="input"] {
             min-width: 0px !important;
         }
-        /* Hide overlapping arrows in small number inputs if needed */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
+        /* Fix overlapping text in small inputs */
+        .stNumberInput input {
+            padding-right: 0px !important; 
+            min-width: 0px !important;
         }
     }
 
@@ -100,7 +87,7 @@ st.markdown("""
         white-space: pre-line;
     }
     
-    /* Grid Container for Mobile Cards (Results) */
+    /* Grid Container for Mobile Cards */
     .grid-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -218,12 +205,12 @@ st.markdown("#### Patient Details")
 # 1. Gender (Full Row)
 gender = st.selectbox("Gender", ["Male", "Female"])
 
-# 2. Age & Weight (Side-by-Side 50% Grid)
+# 2. Age & Weight (Side-by-Side)
 c1, c2 = st.columns(2)
 with c1: age = st.number_input("Age", 10, 100, 25)
 with c2: weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
 
-# 3. Height Fields (Side-by-Side 50% Grid)
+# 3. Height Fields (Side-by-Side)
 c3, c4 = st.columns(2)
 with c3: height_ft = st.number_input("Height (Ft)", 3, 8, 5)
 with c4: height_in = st.number_input("Height (In)", 0, 11, 7)
