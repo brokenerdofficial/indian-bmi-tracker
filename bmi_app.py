@@ -195,7 +195,6 @@ with col_logo:
 
 with col_title:
     st.markdown("<h2 style='color: white; margin-bottom: 0px;'>Health Metrics Pro</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #888; font-size: 14px;'>Indian Standard Protocol</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -304,6 +303,7 @@ st.markdown("""
         Developed for Indian Demographics
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
