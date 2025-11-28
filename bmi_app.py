@@ -1,301 +1,309 @@
 import streamlit as st
+import os
 
-# --- 1. Page Configuration (Wide Layout for Desktop, Auto-Stack for Mobile) ---
+# --- 1. Page Config ---
 st.set_page_config(
-    page_title="BodyMetrics Professional",
-    page_icon="🏥",
-    layout="wide",
+    page_title="Health Metrics Pro",
+    page_icon="🩺",
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. Professional Design System (CSS) ---
+# --- 2. Neumorphism Light Theme CSS ---
 st.markdown("""
 <style>
-    /* IMPORT CLEAN FONT */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    /* Import Professional Font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    :root {
-        --primary: #2563EB; /* Professional Blue */
-        --bg-color: #F8FAFC; /* Light Slate Background */
-        --card-bg: #FFFFFF;
-        --text-dark: #1E293B;
-        --text-gray: #64748B;
-        --border: #E2E8F0;
-    }
-
-    /* GENERAL APP STYLING */
-    .stApp {
-        background-color: var(--bg-color);
+    /* Global Reset & Font definition */
+    html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
-    
-    /* HIDE DEFAULT STREAMLIT ELEMENTS */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display:none;}
 
-    /* INPUT FIELDS - CLEAN & SHARP */
-    .stNumberInput input, .stSelectbox div {
-        background-color: white;
-        color: var(--text-dark);
-        border-radius: 8px;
-        border: 1px solid var(--border);
+    /* --- NEUMORPHISM CORE COLORS --- */
+    :root {
+        --bg-color: #ECF0F3; /* Soft light grey background */
+        --text-dark: #333333;
+        --text-mid: #555555;
+        --text-light: #888888;
+        /* The magic shadows for the extruded look */
+        --neu-shadow-dark: 9px 9px 16px rgb(163, 177, 198, 0.6);
+        --neu-shadow-light: -9px -9px 16px rgba(255, 255, 255, 0.8);
     }
 
-    /* CARD SYSTEM (Used for all results) */
-    .pro-card {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 12px;
+    /* Force App Background Color */
+    .stApp {
+        background-color: var(--bg-color);
+    }
+    
+    /* --- WIDGET STYLING FOR LIGHT THEME --- */
+    /* Ensure widget labels and text are dark */
+    .stSlider label, .stSelectbox label, .stRadio label, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown p {
+        color: var(--text-dark) !important;
+    }
+    /* Style the slider thumbs and tracks to blend better */
+    div[data-baseweb="slider"] div[role="slider"] {
+        background-color: var(--bg-color) !important;
+        box-shadow: var(--neu-shadow-dark);
+        border: 2px solid #fff;
+    }
+    
+    /* Selectbox styling */
+    div[data-baseweb="select"] > div {
+        background-color: var(--bg-color) !important;
+        border: none !important;
+        box-shadow: inset 4px 4px 8px rgb(163, 177, 198, 0.4), inset -4px -4px 8px rgba(255, 255, 255, 0.8) !important;
+        color: var(--text-dark) !important;
+        border-radius: 12px !important;
+    }
+
+    /* --- NEUMORPHIC CARD CLASSES --- */
+    /* The main extruded card style */
+    .neu-card {
+        background-color: var(--bg-color);
+        border-radius: 20px;
         padding: 24px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle professional shadow */
-        height: 100%;
-        transition: transform 0.2s ease;
+        margin-bottom: 20px;
+        /* The double shadow creates the pop-out effect */
+        box-shadow: var(--neu-shadow-dark), var(--neu-shadow-light);
+        transition: all 0.3s ease;
     }
-    .pro-card:hover {
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    
+    /* Optional: Slight hover effect to lift the card further */
+    .neu-card:hover {
+        box-shadow: 12px 12px 20px rgb(163, 177, 198, 0.7), -12px -12px 20px rgba(255, 255, 255, 0.9);
     }
 
-    /* TYPOGRAPHY */
-    h1, h2, h3 { color: var(--text-dark); font-weight: 700; letter-spacing: -0.5px; }
-    p { color: var(--text-gray); font-size: 15px; line-height: 1.6; }
+    /* A container style for inputs to group them visually */
+    .input-container {
+         background-color: var(--bg-color);
+         border-radius: 20px;
+         padding: 20px;
+         /* A slightly softer shadow for the input area */
+         box-shadow: 5px 5px 10px rgb(163, 177, 198, 0.5), -5px -5px 10px rgba(255, 255, 255, 0.8);
+         margin-bottom: 20px;
+    }
     
+    /* --- TYPOGRAPHY & METRICS --- */
     .metric-label {
-        font-size: 11px;
+        font-size: 13px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--text-gray);
+        letter-spacing: 1.2px;
+        color: var(--text-mid);
+        margin-bottom: 10px;
         font-weight: 600;
-        margin-bottom: 8px;
     }
     .metric-value {
-        font-size: 28px;
-        font-weight: 700;
+        font-size: 36px;
+        font-weight: 800;
         color: var(--text-dark);
+        margin: 0;
+        line-height: 1.2;
     }
-    .metric-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        margin-top: 8px;
-    }
-
-    /* RESPONSIVE GRID FOR MEALS */
-    .meal-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .meal-item {
-        background: #F8FAFC;
-        border-left: 4px solid var(--primary);
-        padding: 16px;
-        border-radius: 8px;
+    .metric-sub {
+        font-size: 15px;
+        color: var(--text-light);
+        margin-top: 6px;
+        font-weight: 500;
     }
 
-    /* BUTTON STYLING */
+    /* --- BUTTON STYLING --- */
     div.stButton > button {
-        background-color: var(--primary);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
+        background-color: var(--bg-color) !important;
+        color: var(--text-dark) !important;
+        border: none !important;
+        padding: 14px 24px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        border-radius: 50px; /* rounded pill shape common in Neumorphism */
         width: 100%;
-        transition: background-color 0.2s;
+        box-shadow: var(--neu-shadow-dark), var(--neu-shadow-light) !important;
+        transition: all 0.2s ease-in-out;
     }
-    div.stButton > button:hover {
-        background-color: #1D4ED8; /* Darker Blue */
-        border: none;
+    /* Pressed state for the button */
+    div.stButton > button:active {
+        box-shadow: inset 4px 4px 8px rgb(163, 177, 198, 0.5), inset -4px -4px 8px rgba(255, 255, 255, 0.9) !important;
+        transform: scale(0.98);
+    }
+
+    /* Hide Streamlit clutter */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Custom Footer */
+    .pro-footer {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--text-mid);
+        font-size: 13px;
+        margin-top: 40px;
+        font-weight: 500;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Medical Logic (Backend) ---
+# --- 3. Logic Functions (Unchanged logic, updated colors for light theme) ---
 
-def get_clinical_data(bmi):
-    # Returns: Category, Hex Color, Text Color (for contrast)
-    if bmi < 18.5: return "Underweight", "#DBEAFE", "#1E40AF" # Light Blue bg, Dark Blue text
-    elif 18.5 <= bmi <= 22.9: return "Normal Weight", "#DCFCE7", "#166534" # Green
-    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FEF3C7", "#92400E" # Yellow/Orange
-    else: return "Obese", "#FEE2E2", "#991B1B" # Red
+def get_status(bmi):
+    # Colors tweaked to look better on light background (slightly darker)
+    if bmi < 18.5: return "Underweight", "#039BE5"  # Darker Blue
+    elif 18.5 <= bmi <= 22.9: return "Normal Range", "#43A047"  # Darker Green
+    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FB8C00"  # Darker Orange
+    else: return "Obese", "#E53935"  # Darker Red
 
-def calculate_metrics(weight, height_cm, age, gender, activity):
-    # 1. BMI
-    height_m = height_cm / 100
-    bmi = weight / (height_m ** 2)
-    
-    # 2. TDEE (Mifflin-St Jeor)
+def calculate_tdee(weight, height_cm, age, gender, activity):
+    # Mifflin-St Jeor Equation
     bmr = (10 * weight) + (6.25 * height_cm) - (5 * age) + (5 if gender == "Male" else -161)
-    act_map = {
-        "Sedentary (Office/Desk Job)": 1.2,
-        "Lightly Active (1-3 days/week)": 1.375,
-        "Moderately Active (3-5 days/week)": 1.55,
-        "Very Active (6-7 days/week)": 1.725,
-        "Extra Active (Physical Labor)": 1.9
-    }
-    tdee = int(bmr * act_map.get(activity, 1.2))
     
-    return bmi, tdee
+    multipliers = {
+        "Sedentary (Office Job)": 1.2,
+        "Lightly Active (1-3 days)": 1.375,
+        "Moderately Active (3-5 days)": 1.55,
+        "Very Active (6-7 days)": 1.725,
+        "Extra Active (Physical Job)": 1.9
+    }
+    return int(bmr * multipliers.get(activity, 1.2))
 
-def get_diet_protocol(category):
+def get_plan_text(category):
+    # (Diet plan text remains the same as previous version)
     if category == "Underweight":
         return {
-            "Protocol": "Caloric Surplus (+300 kcal)",
-            "Focus": "Nutrient Density & Frequency",
-            "Meals": [
-                ("Breakfast", "2 Paneer Parathas + Curd", "High Protein/Carb"),
-                ("Lunch", "Rice, Dal Tadka (Ghee), Mixed Veg", "Calorie Dense"),
-                ("Snack", "Banana Shake with Nuts & Dates", "Healthy Fats"),
-                ("Dinner", "3 Rotis + Chicken/Paneer Curry", "Sustained Energy")
-            ]
+            "Goal": "Hypertrophy / Weight Gain",
+            "Strategy": "Caloric Surplus (+300 kcal)",
+            "Diet": "Focus on calorie-dense whole foods. \n• Breakfast: Parathas with curd or Eggs with whole grain toast. \n• Lunch: Rice, Dal Tadka with Ghee, dense vegetables. \n• Dinner: Protein-rich curry (Chicken/Paneer) with Rotis."
         }
-    elif category == "Normal Weight":
+    elif category == "Normal Range":
         return {
-            "Protocol": "Maintenance",
-            "Focus": "Macronutrient Balance",
-            "Meals": [
-                ("Breakfast", "Vegetable Poha/Upma or Idli", "Light Start"),
-                ("Lunch", "2 Rotis, Dal, Seasonal Sabzi, Salad", "Fiber Rich"),
-                ("Snack", "Whole Fruit or Green Tea", "Antioxidants"),
-                ("Dinner", "Multigrain Roti + Lauki/Torai", "Easy Digestion")
-            ]
+            "Goal": "Maintenance & General Health",
+            "Strategy": "Maintenance Calories",
+            "Diet": "Balanced Macronutrients. \n• Breakfast: Poha/Upma with vegetables or Idli. \n• Lunch: Roti, Dal, Sabzi, Salad. \n• Dinner: Multigrain Roti with light vegetable curry."
         }
     elif category == "Overweight":
         return {
-            "Protocol": "Caloric Deficit (-500 kcal)",
-            "Focus": "Volume Eating & High Fiber",
-            "Meals": [
-                ("Breakfast", "Oats Porridge or Moong Dal Chilla", "Complex Carbs"),
-                ("Lunch", "1 Roti + Dal + Large Salad Bowl", "Satiety Focus"),
-                ("Snack", "Roasted Makhana or Buttermilk", "Low Calorie"),
-                ("Dinner", "Grilled Protein Salad or Soup", "Light End")
-            ]
+            "Goal": "Fat Loss",
+            "Strategy": "Caloric Deficit (-500 kcal)",
+            "Diet": "High Volume, Low Calorie. \n• Breakfast: Oats or Daliya (Porridge). \n• Lunch: 1-2 Rotis, boiled Dal, large portion of salad. \n• Dinner: Grilled protein salad or clear soup."
         }
     else: # Obese
         return {
-            "Protocol": "Aggressive Reduction",
-            "Focus": "Low Carb & Anti-Inflammatory",
-            "Meals": [
-                ("Breakfast", "Veg Juice + Egg Whites", "Protein Kick"),
-                ("Lunch", "Jowar Roti + Leafy Greens + Raita", "Low Glycemic"),
-                ("Snack", "Green Tea + 5 Almonds", "Metabolism"),
-                ("Dinner", "Lentil Soup + Sautéed Veggies", "No Heavy Carbs")
-            ]
+            "Goal": "Aggressive Fat Loss",
+            "Strategy": "Strict Deficit & Medical Management",
+            "Diet": "Low Carbohydrate / High Fiber. \n• Breakfast: Vegetable juice or Egg whites. \n• Lunch: Jowar Roti with leafy greens. \n• Dinner: Lentil soup. Avoid sugar and refined flour entirely."
         }
 
-# --- 4. UI Layout ---
+# --- 4. Main Layout ---
 
-# Header
-st.markdown("<h3>🏥 BodyMetrics <span style='color:#2563EB'>Pro</span></h3>", unsafe_allow_html=True)
-st.markdown("<p>Professional Health Assessment • Indian Standards</p>", unsafe_allow_html=True)
-st.divider()
+# Header Area
+col_logo, col_title = st.columns([1, 4])
+with col_logo:
+    # Using an emoji as a fallback logo that fits the theme
+    st.markdown("<h1 style='font-size: 60px; text-align: center;'>🩺</h1>", unsafe_allow_html=True)
 
-# --- INPUT SECTION (Responsive Columns) ---
-# We use standard text/number inputs for precision
-with st.container():
-    c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
-    
-    with c1:
-        gender = st.selectbox("Gender", ["Male", "Female"])
-        age = st.number_input("Age (Years)", 15, 90, 25)
-    
-    with c2:
-        weight = st.number_input("Weight (kg)", 30.0, 200.0, 72.0, format="%.1f")
-        activity = st.selectbox("Activity Level", [
-            "Sedentary (Office/Desk Job)",
-            "Lightly Active (1-3 days/week)",
-            "Moderately Active (3-5 days/week)",
-            "Very Active (6-7 days/week)",
-            "Extra Active (Physical Labor)"
-        ])
-        
-    with c3:
-        height_ft = st.number_input("Height (Feet)", 3, 7, 5)
-        height_in = st.number_input("Height (Inches)", 0, 11, 7)
-        # Internal Calculation
-        height_cm = (height_ft * 12 + height_in) * 2.54
-        
-    with c4:
-        st.write("") # Spacer to align button
-        st.write("") 
-        if st.button("Generate Assessment"):
-            calc_trigger = True
-        else:
-            calc_trigger = False
+with col_title:
+    st.markdown("<h1 style='color: #333; margin-bottom: 5px; font-weight: 800;'>Health Metrics Pro</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #777; font-size: 16px; font-weight: 500;'>Indian Standard Protocol</p>", unsafe_allow_html=True)
 
-# --- 5. RESULTS SECTION ---
-if calc_trigger:
+st.write("") # Spacer
+
+# --- INPUT SECTION (Sliding Widgets) ---
+# We wrap inputs in a neumorphic container for visual grouping
+st.markdown('<div class="input-container">', unsafe_allow_html=True)
+st.markdown("### 👤 Patient Details")
+
+c1, c2 = st.columns(2)
+with c1:
+    gender = st.selectbox("Gender", ["Male", "Female"])
+    # CHANGED TO SLIDER
+    age = st.slider("Age (Years)", min_value=10, max_value=100, value=25, step=1)
+
+with c2:
+    # CHANGED TO SLIDER
+    weight = st.slider("Weight (kg)", min_value=30.0, max_value=200.0, value=70.0, step=0.5, format="%d kg")
+    activity = st.selectbox("Activity Level", [
+        "Sedentary (Office Job)",
+        "Lightly Active (1-3 days)",
+        "Moderately Active (3-5 days)",
+        "Very Active (6-7 days)",
+        "Extra Active (Physical Job)"
+    ])
+
+st.markdown("---")
+st.markdown("### 📏 Height Measurement")
+h1, h2 = st.columns(2)
+with h1:
+    # CHANGED TO SLIDER
+    height_ft = st.slider("Feet", min_value=3, max_value=7, value=5, step=1)
+with h2:
+    # CHANGED TO SLIDER
+    height_in = st.slider("Inches", min_value=0, max_value=11, value=7, step=1)
+
+# Calculate CM immediately
+height_cm = (height_ft * 12 + height_in) * 2.54
+height_m = height_cm / 100
+
+st.markdown('</div>', unsafe_allow_html=True) # End input container
+
+st.markdown("<br>", unsafe_allow_html=True)
+# The button styles itself via CSS to look Neumorphic
+calc = st.button("CALCULATE METRICS")
+
+# --- 5. Results Section ---
+if calc:
     # Calculations
-    bmi, tdee = calculate_metrics(weight, height_cm, age, gender, activity)
-    cat_text, cat_bg, cat_color = get_clinical_data(bmi)
-    diet_data = get_diet_protocol(cat_text)
+    bmi = weight / (height_m ** 2)
+    tdee = calculate_tdee(weight, height_cm, age, gender, activity)
+    status, color_code = get_status(bmi)
+    plan = get_plan_text(status)
     
-    if cat_text in ["Overweight", "Obese"]: target_cals = tdee - 500
-    elif cat_text == "Underweight": target_cals = tdee + 300
+    if status in ["Overweight", "Obese"]: target_cals = tdee - 500
+    elif status == "Underweight": target_cals = tdee + 300
     else: target_cals = tdee
 
-    st.divider()
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # METRICS ROW
-    m1, m2, m3 = st.columns(3)
-    
-    with m1:
-        st.markdown(f"""
-        <div class="pro-card">
-            <div class="metric-label">Clinical BMI</div>
-            <div class="metric-value">{bmi:.1f}</div>
-            <div class="metric-badge" style="background-color: {cat_bg}; color: {cat_color};">
-                {cat_text}
-            </div>
+    # RESULT CARDS (Using CSS Grid in HTML for responsive layout)
+    # The .neu-card class gives them the extruded look
+    st.markdown(f"""
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px;">
+        <div class="neu-card">
+            <div class="metric-label">BMI Score</div>
+            <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
+            <div class="metric-sub" style="color: {color_code}; font-weight: 700;">{status}</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-    with m2:
-        st.markdown(f"""
-        <div class="pro-card">
+        <div class="neu-card">
             <div class="metric-label">Maintenance (TDEE)</div>
             <div class="metric-value">{tdee}</div>
-            <p style="margin-top:5px; font-size:13px;">Daily calories to maintain weight</p>
+            <div class="metric-sub">kcal / day</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-    with m3:
-        st.markdown(f"""
-        <div class="pro-card" style="border-color: #2563EB;">
-            <div class="metric-label">Target Goal</div>
-            <div class="metric-value" style="color: #2563EB;">{target_cals}</div>
-            <p style="margin-top:5px; font-size:13px; color: #2563EB;"><b>{diet_data['Protocol']}</b></p>
+        <div class="neu-card">
+            <div class="metric-label">Recommended Target</div>
+            <div class="metric-value" style="color: #333">{target_cals}</div>
+            <div class="metric-sub">kcal / day to reach goal</div>
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-    # DIET PLAN ROW
+    # DIET PLAN SECTION
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("#### 📋 Recommended Protocol")
-    st.markdown(f"<p>Clinical Focus: <b>{diet_data['Focus']}</b></p>", unsafe_allow_html=True)
+    st.markdown("### 📋 Clinical Recommendations")
     
-    # Constructing the Grid HTML
-    grid_html = '<div class="meal-grid">'
-    
-    for meal_name, food, note in diet_data['Meals']:
-        grid_html += f"""
-        <div class="pro-card meal-item">
-            <div class="metric-label">{meal_name}</div>
-            <div style="font-weight: 600; color: #1E293B; margin-top: 4px;">{food}</div>
-            <div style="font-size: 13px; color: #64748B; margin-top: 8px;">• {note}</div>
+    # Using Neumorphic card for diet plan
+    st.markdown(f"""
+    <div class="neu-card">
+        <h3 style="color: #333; margin-top:0; font-weight: 800;">{plan['Goal']}</h3>
+        <p style="color: #666; font-size: 15px; margin-bottom: 20px; font-weight: 500;">Strategy: <span style="color:{color_code}">{plan['Strategy']}</span></p>
+        
+        <div style="background-color: #ECF0F3; padding: 20px; border-radius: 15px; box-shadow: inset 5px 5px 10px #d1d9e6, inset -5px -5px 10px #ffffff; border-left: 5px solid {color_code};">
+            <p style="color: #444; white-space: pre-line; line-height: 1.8; font-weight: 500; margin:0;">{plan['Diet']}</p>
         </div>
-        """
-    
-    grid_html += '</div>'
-    st.markdown(grid_html, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-# Footer
-st.markdown("<br><br><br>", unsafe_allow_html=True)
+# --- 6. Footer ---
 st.markdown("""
-<div style="text-align: center; color: #94A3B8; font-size: 12px; border-top: 1px solid #E2E8F0; padding-top: 20px;">
-    Assessment Tool v2.1 • Neon Fix / Brokenerd • Not for medical diagnosis
-</div>
+    <div class="pro-footer">
+        NEON FIX / BROKENERD &copy; 2024<br>
+        Developed for Indian Demographics
+    </div>
 """, unsafe_allow_html=True)
