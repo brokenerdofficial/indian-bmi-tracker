@@ -190,10 +190,7 @@ def get_plan_text(category):
 
 col_logo, col_title = st.columns([1, 4])
 with col_logo:
-    if os.path.exists("logo.png"): st.image("logo.png", width=150, display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;)
+    if os.path.exists("logo.png"): st.image("logo.png", width=150)
     else: st.markdown("<h2 style='color:#FFF;'>NF</h2>", unsafe_allow_html=True)
 
 with col_title:
@@ -307,5 +304,6 @@ st.markdown("""
         Developed for Indian Demographics
     </div>
 """, unsafe_allow_html=True)
+
 
 
