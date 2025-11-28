@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. Professional Dark Theme CSS ---
+# --- 2. Professional Dark Theme CSS with Animations & Shadows ---
 st.markdown("""
 <style>
     /* Import Professional Font */
@@ -32,15 +32,45 @@ st.markdown("""
     div[data-baseweb="select"] > div {
         background-color: #262730 !important;
         border-color: #41444C !important;
+        transition: border-color 0.3s ease;
+    }
+    div[data-baseweb="select"] > div:hover {
+        border-color: #FFFFFF !important;
     }
 
-    /* Professional Card Styling */
+    /* --- ANIMATIONS DEFINITION --- */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 20px, 0);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    /* --- PROFESSIONAL CARD STYLING (With White Shadows) --- */
     .pro-card {
         background-color: #1E1E1E;
         border: 1px solid #333333;
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 24px;
         margin-bottom: 16px;
+        
+        /* The White Box Shadow (Subtle Glow) */
+        box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+        
+        /* Animation properties */
+        animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        transition: all 0.3s ease;
+    }
+    
+    /* Hover Effect: Lift & Intensify Glow */
+    .pro-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
     }
     
     /* Metrics Styling */
@@ -68,16 +98,21 @@ st.markdown("""
         background-color: #FFFFFF;
         color: #000000;
         border: none;
-        padding: 12px 24px;
+        padding: 14px 24px;
         font-weight: 600;
-        border-radius: 8px;
+        border-radius: 12px;
         width: 100%;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
     }
     div.stButton > button:hover {
-        background-color: #E0E0E0;
+        background-color: #F0F0F0;
         color: #000000;
-        border: none;
+        transform: scale(1.02);
+        box-shadow: 0 6px 15px rgba(255, 255, 255, 0.2);
+    }
+    div.stButton > button:active {
+        transform: scale(0.98);
     }
 
     /* Remove Streamlit Branding */
@@ -93,6 +128,7 @@ st.markdown("""
         font-size: 12px;
         border-top: 1px solid #333;
         margin-top: 40px;
+        animation: fadeInUp 1s ease forwards;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -211,18 +247,18 @@ if calc:
     # RESULT CARDS (Using CSS Grid for Pro Look)
     st.markdown(f"""
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div class="pro-card">
+        <div class="pro-card" style="animation-delay: 0.1s;">
             <div class="metric-label">BMI Score</div>
             <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
             <div class="metric-sub">{status}</div>
         </div>
-        <div class="pro-card">
+        <div class="pro-card" style="animation-delay: 0.2s;">
             <div class="metric-label">Maintenance (TDEE)</div>
             <div class="metric-value">{tdee}</div>
             <div class="metric-sub">kcal / day</div>
         </div>
     </div>
-    <div class="pro-card" style="margin-top: 0px;">
+    <div class="pro-card" style="margin-top: 0px; animation-delay: 0.3s;">
         <div class="metric-label">Recommended Target</div>
         <div class="metric-value" style="color: #FFFFFF">{target_cals}</div>
         <div class="metric-sub">kcal / day to reach goal</div>
@@ -233,7 +269,7 @@ if calc:
     st.markdown("#### Clinical Recommendations")
     
     st.markdown(f"""
-    <div class="pro-card">
+    <div class="pro-card" style="animation-delay: 0.4s;">
         <h4 style="color: white; margin-top:0;">{plan['Goal']}</h4>
         <p style="color: #AAA; font-size: 14px; margin-bottom: 20px;">Strategy: {plan['Strategy']}</p>
         <div style="background-color: #262730; padding: 15px; border-radius: 8px; border-left: 4px solid {color_code};">
