@@ -245,8 +245,9 @@ if calc:
 # --- 6. Footer ---
 st.markdown("""
     <div class="pro-footer">
-        BROKENERD &copy; 2024<br>
+        BROKENERD &copy; 2025<br>
         Developed for Indian Demographics
     </div>
 
 """, unsafe_allow_html=True)
+
