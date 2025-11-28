@@ -17,44 +17,38 @@ st.markdown("""
     * { font-family: 'Inter', sans-serif !important; }
     .stApp { background-color: #0E1117; }
     
-    /* Input Styling - General */
-    .stTextInput input, .stSelectbox div, .stRadio label { 
-        color: #FFFFFF !important;
-        background-color: #262730 !important;
-        border-color: #41444C !important;
-    }
+    /* Input Styling */
+    .stNumberInput input, .stSelectbox div, .stRadio label { color: #FFFFFF !important; }
     div[data-baseweb="select"] > div {
         background-color: #262730 !important;
         border-color: #41444C !important;
     }
     
-    /* --- MOBILE LAYOUT FIX --- */
-    /* Forces side-by-side layout for small inputs on mobile */
+    /* --- FORCE MOBILE SIDE-BY-SIDE LAYOUT --- */
     @media (max-width: 768px) {
-        /* Force the row container to stay horizontal */
+        /* Force the container to be a row, not a column */
         div[data-testid="stHorizontalBlock"] {
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            gap: 12px !important;
-            align-items: flex-end !important; /* Align bottoms if labels differ */
+            gap: 10px !important; /* Reduce gap to fit better */
         }
         
-        /* Force columns to split space 50/50 */
+        /* Force columns to behave like flex items, not full-width blocks */
         div[data-testid="column"] {
-            flex: 1 1 0px !important;
             width: auto !important;
-            min-width: 0px !important;
+            flex: 1 1 auto !important;
+            min-width: 0px !important; /* Crucial: allows shrinking */
         }
         
-        /* Ensure the input widgets themselves shrink */
-        div[data-baseweb="input"], .stTextInput {
-            width: 100% !important;
+        /* Fix input spacing inside the columns */
+        .stNumberInput div[data-baseweb="input"] {
             min-width: 0px !important;
         }
-        
-        /* Reduce label size slightly on mobile to prevent wrapping */
-        .stMarkdown label p {
-            font-size: 13px !important;
+        /* Hide overlapping arrows in small number inputs if needed */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
     }
 
@@ -146,14 +140,6 @@ st.markdown("""
 
 # --- 3. Logic Functions ---
 
-def safe_parse(val, default_val):
-    """Safely parses string input to float/int."""
-    try:
-        if not val: return default_val
-        return float(val)
-    except ValueError:
-        return default_val
-
 def get_status(bmi):
     if bmi < 18.5: return "Underweight", "#4FC3F7"
     elif 18.5 <= bmi <= 22.9: return "Normal Range", "#66BB6A"
@@ -232,26 +218,15 @@ st.markdown("#### Patient Details")
 # 1. Gender (Full Row)
 gender = st.selectbox("Gender", ["Male", "Female"])
 
-# 2. Age & Weight (Side-by-Side Text Inputs)
-# Using Text Inputs to save space on mobile
+# 2. Age & Weight (Side-by-Side 50% Grid)
 c1, c2 = st.columns(2)
-with c1: 
-    age_str = st.text_input("Age", value="25")
-with c2: 
-    weight_str = st.text_input("Weight (kg)", value="72.0")
+with c1: age = st.number_input("Age", 10, 100, 25)
+with c2: weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
 
-# 3. Height Fields (Side-by-Side Text Inputs)
+# 3. Height Fields (Side-by-Side 50% Grid)
 c3, c4 = st.columns(2)
-with c3: 
-    height_ft_str = st.text_input("Height (Ft)", value="5")
-with c4: 
-    height_in_str = st.text_input("Height (In)", value="7")
-
-# Parse inputs safely
-age = safe_parse(age_str, 25)
-weight = safe_parse(weight_str, 72.0)
-height_ft = safe_parse(height_ft_str, 5)
-height_in = safe_parse(height_in_str, 7)
+with c3: height_ft = st.number_input("Height (Ft)", 3, 8, 5)
+with c4: height_in = st.number_input("Height (In)", 0, 11, 7)
 
 # 4. Activity (Full Row)
 activity = st.selectbox("Activity Level", [
@@ -268,78 +243,73 @@ calc = st.button("CALCULATE METRICS")
 
 # --- 5. Results Section ---
 if calc:
-    # Calculations
-    try:
-        bmi = weight / (height_m ** 2)
-        tdee = calculate_tdee(weight, height_cm, age, gender, activity)
-        status, color_code = get_status(bmi)
-        plan = get_plan_text(status)
-        meals = plan['Meals']
-        
-        if status in ["Overweight", "Obese"]: target_cals = tdee - 500
-        elif status == "Underweight": target_cals = tdee + 300
-        else: target_cals = tdee
+    bmi = weight / (height_m ** 2)
+    tdee = calculate_tdee(weight, height_cm, age, gender, activity)
+    status, color_code = get_status(bmi)
+    plan = get_plan_text(status)
+    meals = plan['Meals']
+    
+    if status in ["Overweight", "Obese"]: target_cals = tdee - 500
+    elif status == "Underweight": target_cals = tdee + 300
+    else: target_cals = tdee
 
-        st.markdown("---")
-        
-        # --- 1. BMI & TDEE (HTML Grid) ---
-        st.markdown(f"""
-        <div class="grid-container">
-            <div class="pro-card" style="animation-delay: 0.1s;">
-                <div class="metric-label">BMI Score</div>
-                <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
-                <div class="metric-sub">{status}</div>
-            </div>
-            <div class="pro-card" style="animation-delay: 0.2s;">
-                <div class="metric-label">Maintenance</div>
-                <div class="metric-value">{tdee}</div>
-                <div class="metric-sub">kcal / day</div>
-            </div>
+    st.markdown("---")
+    
+    # --- 1. BMI & TDEE (HTML Grid - Side by Side guaranteed) ---
+    st.markdown(f"""
+    <div class="grid-container">
+        <div class="pro-card" style="animation-delay: 0.1s;">
+            <div class="metric-label">BMI Score</div>
+            <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
+            <div class="metric-sub">{status}</div>
         </div>
-        
-        <div class="pro-card" style="margin-top: 0px; animation-delay: 0.3s;">
-            <div class="metric-label">Recommended Target</div>
-            <div class="metric-value" style="color: #FFFFFF">{target_cals}</div>
-            <div class="metric-sub">kcal / day to reach goal ({plan['Goal']})</div>
+        <div class="pro-card" style="animation-delay: 0.2s;">
+            <div class="metric-label">Maintenance</div>
+            <div class="metric-value">{tdee}</div>
+            <div class="metric-sub">kcal / day</div>
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    
+    <div class="pro-card" style="margin-top: 0px; animation-delay: 0.3s;">
+        <div class="metric-label">Recommended Target</div>
+        <div class="metric-value" style="color: #FFFFFF">{target_cals}</div>
+        <div class="metric-sub">kcal / day to reach goal ({plan['Goal']})</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        # --- 2. Diet Plan (HTML Grid for Meals) ---
-        st.markdown("#### Clinical Diet Recommendations")
-        
-        # We replace newlines with <br> for HTML rendering in the f-string
-        bf_text = meals['Breakfast'].replace('\n', '<br>')
-        ln_text = meals['Lunch'].replace('\n', '<br>')
-        sn_text = meals['Snacks'].replace('\n', '<br>')
-        dn_text = meals['Dinner'].replace('\n', '<br>')
+    # --- 2. Diet Plan (HTML Grid for Meals) ---
+    st.markdown("#### Clinical Diet Recommendations")
+    
+    # We replace newlines with <br> for HTML rendering in the f-string
+    bf_text = meals['Breakfast'].replace('\n', '<br>')
+    ln_text = meals['Lunch'].replace('\n', '<br>')
+    sn_text = meals['Snacks'].replace('\n', '<br>')
+    dn_text = meals['Dinner'].replace('\n', '<br>')
 
-        st.markdown(f"""
-        <div class="grid-container">
-            <div class="pro-card" style="animation-delay: 0.4s;">
-                <div class="metric-label" style="color: #4FC3F7;">Breakfast</div>
-                <div class="meal-text">{bf_text}</div>
-            </div>
-            <div class="pro-card" style="animation-delay: 0.5s;">
-                <div class="metric-label" style="color: #FFA726;">Lunch</div>
-                <div class="meal-text">{ln_text}</div>
-            </div>
+    st.markdown(f"""
+    <div class="grid-container">
+        <div class="pro-card" style="animation-delay: 0.4s;">
+            <div class="metric-label" style="color: #4FC3F7;">Breakfast</div>
+            <div class="meal-text">{bf_text}</div>
         </div>
+        <div class="pro-card" style="animation-delay: 0.5s;">
+            <div class="metric-label" style="color: #FFA726;">Lunch</div>
+            <div class="meal-text">{ln_text}</div>
+        </div>
+    </div>
 
-        <div class="grid-container">
-            <div class="pro-card" style="animation-delay: 0.6s;">
-                <div class="metric-label" style="color: #AB47BC;">Snacks</div>
-                <div class="meal-text">{sn_text}</div>
-            </div>
-            <div class="pro-card" style="animation-delay: 0.7s;">
-                <div class="metric-label" style="color: #66BB6A;">Dinner</div>
-                <div class="meal-text">{dn_text}</div>
-            </div>
+    <div class="grid-container">
+        <div class="pro-card" style="animation-delay: 0.6s;">
+            <div class="metric-label" style="color: #AB47BC;">Snacks</div>
+            <div class="meal-text">{sn_text}</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-    except Exception as e:
-        st.error("Please check your input values. Ensure they are numbers.")
-        
+        <div class="pro-card" style="animation-delay: 0.7s;">
+            <div class="metric-label" style="color: #66BB6A;">Dinner</div>
+            <div class="meal-text">{dn_text}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # --- 6. Footer ---
 st.markdown("""
     <div class="pro-footer">
