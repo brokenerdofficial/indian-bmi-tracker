@@ -4,107 +4,153 @@ import os
 # --- 1. Page Config ---
 st.set_page_config(
     page_title="Health Metrics Pro",
-    page_icon=None,
+    page_icon="🩺",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. Professional Dark Theme CSS ---
+# --- 2. Neumorphism Light Theme CSS ---
 st.markdown("""
 <style>
     /* Import Professional Font */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Global Reset */
-    * {
-        font-family: 'Inter', sans-serif !important;
+    /* Global Reset & Font definition */
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
     }
 
-    /* Force Dark Theme Backgrounds */
+    /* --- NEUMORPHISM CORE COLORS --- */
+    :root {
+        --bg-color: #ECF0F3; /* Soft light grey background */
+        --text-dark: #333333;
+        --text-mid: #555555;
+        --text-light: #888888;
+        /* The magic shadows for the extruded look */
+        --neu-shadow-dark: 9px 9px 16px rgb(163, 177, 198, 0.6);
+        --neu-shadow-light: -9px -9px 16px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Force App Background Color */
     .stApp {
-        background-color: #0E1117;
+        background-color: var(--bg-color);
     }
     
-    /* Input Fields Styling */
-    .stNumberInput input, .stSelectbox div, .stRadio label {
-        color: #FFFFFF !important;
+    /* --- WIDGET STYLING FOR LIGHT THEME --- */
+    /* Ensure widget labels and text are dark */
+    .stSlider label, .stSelectbox label, .stRadio label, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown p {
+        color: var(--text-dark) !important;
     }
+    /* Style the slider thumbs and tracks to blend better */
+    div[data-baseweb="slider"] div[role="slider"] {
+        background-color: var(--bg-color) !important;
+        box-shadow: var(--neu-shadow-dark);
+        border: 2px solid #fff;
+    }
+    
+    /* Selectbox styling */
     div[data-baseweb="select"] > div {
-        background-color: #262730 !important;
-        border-color: #41444C !important;
+        background-color: var(--bg-color) !important;
+        border: none !important;
+        box-shadow: inset 4px 4px 8px rgb(163, 177, 198, 0.4), inset -4px -4px 8px rgba(255, 255, 255, 0.8) !important;
+        color: var(--text-dark) !important;
+        border-radius: 12px !important;
     }
 
-    /* Professional Card Styling */
-    .pro-card {
-        background-color: #1E1E1E;
-        border: 1px solid #333333;
-        border-radius: 12px;
+    /* --- NEUMORPHIC CARD CLASSES --- */
+    /* The main extruded card style */
+    .neu-card {
+        background-color: var(--bg-color);
+        border-radius: 20px;
         padding: 24px;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+        /* The double shadow creates the pop-out effect */
+        box-shadow: var(--neu-shadow-dark), var(--neu-shadow-light);
+        transition: all 0.3s ease;
     }
     
-    /* Metrics Styling */
+    /* Optional: Slight hover effect to lift the card further */
+    .neu-card:hover {
+        box-shadow: 12px 12px 20px rgb(163, 177, 198, 0.7), -12px -12px 20px rgba(255, 255, 255, 0.9);
+    }
+
+    /* A container style for inputs to group them visually */
+    .input-container {
+         background-color: var(--bg-color);
+         border-radius: 20px;
+         padding: 20px;
+         /* A slightly softer shadow for the input area */
+         box-shadow: 5px 5px 10px rgb(163, 177, 198, 0.5), -5px -5px 10px rgba(255, 255, 255, 0.8);
+         margin-bottom: 20px;
+    }
+    
+    /* --- TYPOGRAPHY & METRICS --- */
     .metric-label {
-        font-size: 12px;
+        font-size: 13px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #A0A0A0;
-        margin-bottom: 8px;
+        letter-spacing: 1.2px;
+        color: var(--text-mid);
+        margin-bottom: 10px;
+        font-weight: 600;
     }
     .metric-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: #FFFFFF;
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--text-dark);
         margin: 0;
+        line-height: 1.2;
     }
     .metric-sub {
-        font-size: 14px;
-        color: #888;
-        margin-top: 4px;
+        font-size: 15px;
+        color: var(--text-light);
+        margin-top: 6px;
+        font-weight: 500;
     }
 
-    /* Button Styling */
+    /* --- BUTTON STYLING --- */
     div.stButton > button {
-        background-color: #FFFFFF;
-        color: #000000;
-        border: none;
-        padding: 12px 24px;
-        font-weight: 600;
-        border-radius: 8px;
+        background-color: var(--bg-color) !important;
+        color: var(--text-dark) !important;
+        border: none !important;
+        padding: 14px 24px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        border-radius: 50px; /* rounded pill shape common in Neumorphism */
         width: 100%;
-        transition: all 0.2s;
+        box-shadow: var(--neu-shadow-dark), var(--neu-shadow-light) !important;
+        transition: all 0.2s ease-in-out;
     }
-    div.stButton > button:hover {
-        background-color: #E0E0E0;
-        color: #000000;
-        border: none;
+    /* Pressed state for the button */
+    div.stButton > button:active {
+        box-shadow: inset 4px 4px 8px rgb(163, 177, 198, 0.5), inset -4px -4px 8px rgba(255, 255, 255, 0.9) !important;
+        transform: scale(0.98);
     }
 
-    /* Remove Streamlit Branding */
+    /* Hide Streamlit clutter */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Footer */
+    /* Custom Footer */
     .pro-footer {
         text-align: center;
         padding: 40px 0;
-        color: #555;
-        font-size: 12px;
-        border-top: 1px solid #333;
+        color: var(--text-mid);
+        font-size: 13px;
         margin-top: 40px;
+        font-weight: 500;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Logic Functions ---
+# --- 3. Logic Functions (Unchanged logic, updated colors for light theme) ---
 
 def get_status(bmi):
-    # Returns: Status, Color Hex code
-    if bmi < 18.5: return "Underweight", "#4FC3F7"  # Light Blue
-    elif 18.5 <= bmi <= 22.9: return "Normal Range", "#66BB6A"  # Green
-    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FFA726"  # Orange
-    else: return "Obese", "#EF5350"  # Red
+    # Colors tweaked to look better on light background (slightly darker)
+    if bmi < 18.5: return "Underweight", "#039BE5"  # Darker Blue
+    elif 18.5 <= bmi <= 22.9: return "Normal Range", "#43A047"  # Darker Green
+    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FB8C00"  # Darker Orange
+    else: return "Obese", "#E53935"  # Darker Red
 
 def calculate_tdee(weight, height_cm, age, gender, activity):
     # Mifflin-St Jeor Equation
@@ -120,6 +166,7 @@ def calculate_tdee(weight, height_cm, age, gender, activity):
     return int(bmr * multipliers.get(activity, 1.2))
 
 def get_plan_text(category):
+    # (Diet plan text remains the same as previous version)
     if category == "Underweight":
         return {
             "Goal": "Hypertrophy / Weight Gain",
@@ -147,42 +194,32 @@ def get_plan_text(category):
 
 # --- 4. Main Layout ---
 
-# Logo & Header
+# Header Area
 col_logo, col_title = st.columns([1, 4])
 with col_logo:
-    if os.path.exists("logo.png"):
-        st.image("logo.png", width=80)
-    else:
-        # Fallback text if no logo
-        st.markdown("<h2 style='color:#FFF;'>NF</h2>", unsafe_allow_html=True)
+    # Using an emoji as a fallback logo that fits the theme
+    st.markdown("<h1 style='font-size: 60px; text-align: center;'>🩺</h1>", unsafe_allow_html=True)
 
 with col_title:
-    st.markdown("<h2 style='color: white; margin-bottom: 0px;'>Health Metrics Pro</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #888; font-size: 14px;'>Indian Standard Protocol</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #333; margin-bottom: 5px; font-weight: 800;'>Health Metrics Pro</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #777; font-size: 16px; font-weight: 500;'>Indian Standard Protocol</p>", unsafe_allow_html=True)
 
-st.markdown("---")
+st.write("") # Spacer
 
-# INPUT SECTION (Grid Layout - Mobile Friendly)
-st.markdown("#### Patient Details")
+# --- INPUT SECTION (Sliding Widgets) ---
+# We wrap inputs in a neumorphic container for visual grouping
+st.markdown('<div class="input-container">', unsafe_allow_html=True)
+st.markdown("### 👤 Patient Details")
 
 c1, c2 = st.columns(2)
 with c1:
     gender = st.selectbox("Gender", ["Male", "Female"])
-    age = st.number_input("Age", 10, 100, 25)
+    # CHANGED TO SLIDER
+    age = st.slider("Age (Years)", min_value=10, max_value=100, value=25, step=1)
 
 with c2:
-    weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
-    # Height Logic (Simplified)
-    height_ft = st.number_input("Height (Feet)", 3, 8, 5)
-    
-c3, c4 = st.columns(2)
-with c3:
-    height_in = st.number_input("Height (Inches)", 0, 11, 7)
-    # Convert to CM immediately for logic
-    height_cm = (height_ft * 12 + height_in) * 2.54
-    height_m = height_cm / 100
-
-with c4:
+    # CHANGED TO SLIDER
+    weight = st.slider("Weight (kg)", min_value=30.0, max_value=200.0, value=70.0, step=0.5, format="%d kg")
     activity = st.selectbox("Activity Level", [
         "Sedentary (Office Job)",
         "Lightly Active (1-3 days)",
@@ -191,7 +228,24 @@ with c4:
         "Extra Active (Physical Job)"
     ])
 
+st.markdown("---")
+st.markdown("### 📏 Height Measurement")
+h1, h2 = st.columns(2)
+with h1:
+    # CHANGED TO SLIDER
+    height_ft = st.slider("Feet", min_value=3, max_value=7, value=5, step=1)
+with h2:
+    # CHANGED TO SLIDER
+    height_in = st.slider("Inches", min_value=0, max_value=11, value=7, step=1)
+
+# Calculate CM immediately
+height_cm = (height_ft * 12 + height_in) * 2.54
+height_m = height_cm / 100
+
+st.markdown('</div>', unsafe_allow_html=True) # End input container
+
 st.markdown("<br>", unsafe_allow_html=True)
+# The button styles itself via CSS to look Neumorphic
 calc = st.button("CALCULATE METRICS")
 
 # --- 5. Results Section ---
@@ -206,38 +260,42 @@ if calc:
     elif status == "Underweight": target_cals = tdee + 300
     else: target_cals = tdee
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # RESULT CARDS (Using CSS Grid for Pro Look)
+    # RESULT CARDS (Using CSS Grid in HTML for responsive layout)
+    # The .neu-card class gives them the extruded look
     st.markdown(f"""
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div class="pro-card">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px;">
+        <div class="neu-card">
             <div class="metric-label">BMI Score</div>
             <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
-            <div class="metric-sub">{status}</div>
+            <div class="metric-sub" style="color: {color_code}; font-weight: 700;">{status}</div>
         </div>
-        <div class="pro-card">
+        <div class="neu-card">
             <div class="metric-label">Maintenance (TDEE)</div>
             <div class="metric-value">{tdee}</div>
             <div class="metric-sub">kcal / day</div>
         </div>
-    </div>
-    <div class="pro-card" style="margin-top: 0px;">
-        <div class="metric-label">Recommended Target</div>
-        <div class="metric-value" style="color: #FFFFFF">{target_cals}</div>
-        <div class="metric-sub">kcal / day to reach goal</div>
+        <div class="neu-card">
+            <div class="metric-label">Recommended Target</div>
+            <div class="metric-value" style="color: #333">{target_cals}</div>
+            <div class="metric-sub">kcal / day to reach goal</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     # DIET PLAN SECTION
-    st.markdown("#### Clinical Recommendations")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 📋 Clinical Recommendations")
     
+    # Using Neumorphic card for diet plan
     st.markdown(f"""
-    <div class="pro-card">
-        <h4 style="color: white; margin-top:0;">{plan['Goal']}</h4>
-        <p style="color: #AAA; font-size: 14px; margin-bottom: 20px;">Strategy: {plan['Strategy']}</p>
-        <div style="background-color: #262730; padding: 15px; border-radius: 8px; border-left: 4px solid {color_code};">
-            <p style="color: #DDD; white-space: pre-line; line-height: 1.6;">{plan['Diet']}</p>
+    <div class="neu-card">
+        <h3 style="color: #333; margin-top:0; font-weight: 800;">{plan['Goal']}</h3>
+        <p style="color: #666; font-size: 15px; margin-bottom: 20px; font-weight: 500;">Strategy: <span style="color:{color_code}">{plan['Strategy']}</span></p>
+        
+        <div style="background-color: #ECF0F3; padding: 20px; border-radius: 15px; box-shadow: inset 5px 5px 10px #d1d9e6, inset -5px -5px 10px #ffffff; border-left: 5px solid {color_code};">
+            <p style="color: #444; white-space: pre-line; line-height: 1.8; font-weight: 500; margin:0;">{plan['Diet']}</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -248,6 +306,4 @@ st.markdown("""
         BROKENERD &copy; 2025<br>
         Developed for Indian Demographics
     </div>
-
 """, unsafe_allow_html=True)
-
