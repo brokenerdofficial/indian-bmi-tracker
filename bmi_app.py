@@ -1,271 +1,251 @@
 import streamlit as st
 import os
 
-# --- 1. Page Configuration ---
+# --- 1. Page Config ---
 st.set_page_config(
-    page_title="Health Connect",
-    page_icon="🍎",
-    layout="centered", # 'Centered' looks more like a mobile app on desktop
-    initial_sidebar_state="expanded"
+    page_title="Health Metrics Pro",
+    page_icon=None,
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# --- 2. THE IPHONE UI SYSTEM (CSS) ---
+# --- 2. Professional Dark Theme CSS ---
 st.markdown("""
 <style>
-    /* IMPORT APPLE SYSTEM FONTS */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    /* Import Professional Font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* GLOBAL APP BACKGROUND */
+    /* Global Reset */
+    * {
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Force Dark Theme Backgrounds */
     .stApp {
-        background-color: #F2F2F7; /* iOS System Gray 6 */
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #0E1117;
+    }
+    
+    /* Input Fields Styling */
+    .stNumberInput input, .stSelectbox div, .stRadio label {
+        color: #FFFFFF !important;
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #262730 !important;
+        border-color: #41444C !important;
     }
 
-    /* HIDE DEFAULT STREAMLIT ELEMENTS */
-    header {visibility: hidden;}
-    .stDeployButton {display:none;}
-    footer {visibility: hidden;}
-    
-    /* CUSTOM CARD COMPONENT (iOS Style) */
-    .ios-card {
-        background: #FFFFFF;
-        border-radius: 20px;
+    /* Professional Card Styling */
+    .pro-card {
+        background-color: #1E1E1E;
+        border: 1px solid #333333;
+        border-radius: 12px;
         padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.06); /* Soft Apple Shadow */
-        transition: transform 0.2s ease;
-    }
-    .ios-card:hover {
-        transform: translateY(-2px);
-    }
-
-    /* METRIC GRID (RESPONSIVE) */
-    .metric-container {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     
-    /* MOBILE ADJUSTMENT: Stack columns on small screens */
-    @media (max-width: 600px) {
-        .metric-container {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* INDIVIDUAL METRIC BOXES */
-    .metric-box {
-        background: #FFFFFF;
-        border-radius: 18px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        border: 1px solid rgba(0,0,0,0.02);
-    }
+    /* Metrics Styling */
     .metric-label {
-        font-size: 13px;
-        color: #8E8E93; /* iOS Label Gray */
+        font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-        margin-bottom: 5px;
+        letter-spacing: 1px;
+        color: #A0A0A0;
+        margin-bottom: 8px;
     }
     .metric-value {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        color: #1C1C1E;
+        color: #FFFFFF;
+        margin: 0;
     }
     .metric-sub {
         font-size: 14px;
-        font-weight: 600;
-        margin-top: 5px;
+        color: #888;
+        margin-top: 4px;
     }
 
-    /* TABS STYLING (Segmented Control Look) */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: #E5E5EA; /* iOS Segmented Control BG */
-        padding: 4px;
-        border-radius: 12px;
-        gap: 0px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        height: 40px;
-        border-radius: 9px;
-        background-color: transparent;
-        border: none;
-        color: #000;
-        flex: 1; /* Distribute space evenly */
-    }
-    .stTabs [aria-selected="true"] {
+    /* Button Styling */
+    div.stButton > button {
         background-color: #FFFFFF;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        color: #000000;
+        border: none;
+        padding: 12px 24px;
+        font-weight: 600;
+        border-radius: 8px;
+        width: 100%;
+        transition: all 0.2s;
+    }
+    div.stButton > button:hover {
+        background-color: #E0E0E0;
+        color: #000000;
+        border: none;
     }
 
-    /* FOOTER */
-    .ios-footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-top: 1px solid #C6C6C8;
-        padding: 15px;
-        text-align: center;
-        font-size: 12px;
-        color: #8E8E93;
-        z-index: 999;
-    }
+    /* Remove Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    /* INPUT FIELDS ROUNDING */
-    .stNumberInput input, .stSelectbox div, .stRadio {
-        border-radius: 10px !important;
+    /* Footer */
+    .pro-footer {
+        text-align: center;
+        padding: 40px 0;
+        color: #555;
+        font-size: 12px;
+        border-top: 1px solid #333;
+        margin-top: 40px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Logic ---
-def get_details(bmi):
-    # Colors: Green(Success), Blue(Info), Yellow(Warning), Red(Danger)
-    if bmi < 18.5: return "Underweight", "#007AFF" # iOS Blue
-    elif 18.5 <= bmi <= 22.9: return "Normal", "#34C759" # iOS Green
-    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FF9500" # iOS Orange
-    else: return "Obese", "#FF3B30" # iOS Red
+# --- 3. Logic Functions ---
 
-def calc_tdee(weight, height_cm, age, gender, activity):
-    bmr = (10*weight) + (6.25*height_cm) - (5*age) + (5 if gender=="Male" else -161)
-    act_map = {"Sedentary": 1.2, "Lightly Active": 1.375, "Moderately Active": 1.55, "Very Active": 1.725, "Extra Active": 1.9}
-    return int(bmr * act_map.get(activity, 1.2))
+def get_status(bmi):
+    # Returns: Status, Color Hex code
+    if bmi < 18.5: return "Underweight", "#4FC3F7"  # Light Blue
+    elif 18.5 <= bmi <= 22.9: return "Normal Range", "#66BB6A"  # Green
+    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FFA726"  # Orange
+    else: return "Obese", "#EF5350"  # Red
 
-def get_meals(cat):
-    # Returns (Emoji, Breakfast, Lunch, Snack, Dinner, Tip)
-    if cat == "Underweight":
-        return ("🥑", "2 Paneer Parathas + Curd", "Rice, Dal Tadka (Ghee), Sabzi", "Banana Shake + Nuts", "3 Rotis + Chicken/Paneer Curry", "Focus on calorie-dense foods like nuts and ghee.")
-    elif cat == "Normal":
-        return ("🥗", "Poha/Upma + Veggies", "2 Rotis, Dal, Sabzi, Curd", "Apple or Green Tea", "2 Multigrain Rotis + Lauki Sabzi", "Maintain protein intake and hydration.")
-    elif cat == "Overweight":
-        return ("🏃", "Oats/Daliya or Moong Chilla", "1 Multigrain Roti + Dal + Salad", "Roasted Makhana / Chaas", "Grilled Paneer Salad or Soup", "Cut sugar. Walk 10,000 steps daily.")
+def calculate_tdee(weight, height_cm, age, gender, activity):
+    # Mifflin-St Jeor Equation
+    bmr = (10 * weight) + (6.25 * height_cm) - (5 * age) + (5 if gender == "Male" else -161)
+    
+    multipliers = {
+        "Sedentary (Office Job)": 1.2,
+        "Lightly Active (1-3 days)": 1.375,
+        "Moderately Active (3-5 days)": 1.55,
+        "Very Active (6-7 days)": 1.725,
+        "Extra Active (Physical Job)": 1.9
+    }
+    return int(bmr * multipliers.get(activity, 1.2))
+
+def get_plan_text(category):
+    if category == "Underweight":
+        return {
+            "Goal": "Hypertrophy / Weight Gain",
+            "Strategy": "Caloric Surplus (+300 kcal)",
+            "Diet": "Focus on calorie-dense whole foods. \n• Breakfast: Parathas with curd or Eggs with whole grain toast. \n• Lunch: Rice, Dal Tadka with Ghee, dense vegetables. \n• Dinner: Protein-rich curry (Chicken/Paneer) with Rotis."
+        }
+    elif category == "Normal Range":
+        return {
+            "Goal": "Maintenance & General Health",
+            "Strategy": "Maintenance Calories",
+            "Diet": "Balanced Macronutrients. \n• Breakfast: Poha/Upma with vegetables or Idli. \n• Lunch: Roti, Dal, Sabzi, Salad. \n• Dinner: Multigrain Roti with light vegetable curry."
+        }
+    elif category == "Overweight":
+        return {
+            "Goal": "Fat Loss",
+            "Strategy": "Caloric Deficit (-500 kcal)",
+            "Diet": "High Volume, Low Calorie. \n• Breakfast: Oats or Daliya (Porridge). \n• Lunch: 1-2 Rotis, boiled Dal, large portion of salad. \n• Dinner: Grilled protein salad or clear soup."
+        }
     else: # Obese
-        return ("🔥", "Veg Juice + 2 Egg Whites", "1 Jowar Roti + Saag + Raita", "Green Tea + 5 Almonds", "Lentil Soup + Sautéed Veggies", "Strictly no fried food/sugar. Intermittent Fasting.")
+        return {
+            "Goal": "Aggressive Fat Loss",
+            "Strategy": "Strict Deficit & Medical Management",
+            "Diet": "Low Carbohydrate / High Fiber. \n• Breakfast: Vegetable juice or Egg whites. \n• Lunch: Jowar Roti with leafy greens. \n• Dinner: Lentil soup. Avoid sugar and refined flour entirely."
+        }
 
-# --- 4. Sidebar ---
-with st.sidebar:
-    # LOGO HANDLING
-    logo_path = "logo.png"
-    if os.path.exists(logo_path):
-        st.image(logo_path, width=120)
+# --- 4. Main Layout ---
+
+# Logo & Header
+col_logo, col_title = st.columns([1, 4])
+with col_logo:
+    if os.path.exists("logo.png"):
+        st.image("logo.png", width=80)
     else:
-        st.warning("⚠️ 'logo.png' not found. Ensure it's in the same folder.")
-        st.markdown("### Neon Fix / Brokenerd") # Text fallback
+        # Fallback text if no logo
+        st.markdown("<h2 style='color:#FFF;'>NF</h2>", unsafe_allow_html=True)
 
-    st.markdown("#### Personal Details")
-    gender = st.radio("Gender", ["Male", "Female"], horizontal=True, label_visibility="collapsed")
+with col_title:
+    st.markdown("<h2 style='color: white; margin-bottom: 0px;'>Health Metrics Pro</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #888; font-size: 14px;'>Indian Standard Protocol</p>", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# INPUT SECTION (Grid Layout - Mobile Friendly)
+st.markdown("#### Patient Details")
+
+c1, c2 = st.columns(2)
+with c1:
+    gender = st.selectbox("Gender", ["Male", "Female"])
     age = st.number_input("Age", 10, 100, 25)
-    
-    st.markdown("#### Body Stats")
-    weight = st.number_input("Weight (kg)", 1.0, 200.0, 72.0)
-    
-    # Height Tabs inside sidebar for cleaner UI
-    h_tab1, h_tab2 = st.tabs(["Ft/In", "CM"])
-    with h_tab1:
-        c1, c2 = st.columns(2)
-        with c1: feet = st.number_input("Ft", 1, 8, 5)
-        with c2: inches = st.number_input("In", 0, 11, 6)
-        height_cm = (feet*12 + inches)*2.54
-    with h_tab2:
-        h_cm_input = st.number_input("Cm", 50, 250, 170)
-        # Overwrite if this tab is active (Basic logic)
-        # Note: In a complex app we'd use session state, but this works for display
-        if h_cm_input != 170: 
-            height_cm = h_cm_input
 
-    height_m = height_cm/100
+with c2:
+    weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
+    # Height Logic (Simplified)
+    height_ft = st.number_input("Height (Feet)", 3, 8, 5)
     
-    st.markdown("#### Lifestyle")
-    activity = st.selectbox("Activity", ["Sedentary", "Lightly Active", "Moderately Active", "Very Active", "Extra Active"], label_visibility="collapsed")
-    
-    st.write("") # Spacer
-    calc = st.button("Calculate Health Plan", type="primary", use_container_width=True)
+c3, c4 = st.columns(2)
+with c3:
+    height_in = st.number_input("Height (Inches)", 0, 11, 7)
+    # Convert to CM immediately for logic
+    height_cm = (height_ft * 12 + height_in) * 2.54
+    height_m = height_cm / 100
 
-# --- 5. Main UI ---
+with c4:
+    activity = st.selectbox("Activity Level", [
+        "Sedentary (Office Job)",
+        "Lightly Active (1-3 days)",
+        "Moderately Active (3-5 days)",
+        "Very Active (6-7 days)",
+        "Extra Active (Physical Job)"
+    ])
 
-# Header
-st.markdown("<h1 style='text-align: center; margin-bottom: 5px;'>Health Mate 🇮🇳</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #8E8E93; margin-bottom: 30px;'>Advanced Indian BMI & Diet Calculator</p>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
+calc = st.button("CALCULATE METRICS")
 
+# --- 5. Results Section ---
 if calc:
-    # Math
+    # Calculations
     bmi = weight / (height_m ** 2)
-    tdee = calc_tdee(weight, height_cm, age, gender, activity)
-    category, color = get_details(bmi)
-    emoji, b, l, s, d, tip = get_meals(category)
+    tdee = calculate_tdee(weight, height_cm, age, gender, activity)
+    status, color_code = get_status(bmi)
+    plan = get_plan_text(status)
     
-    if category in ["Overweight", "Obese"]: target = tdee - 500
-    elif category == "Underweight": target = tdee + 300
-    else: target = tdee
+    if status in ["Overweight", "Obese"]: target_cals = tdee - 500
+    elif status == "Underweight": target_cals = tdee + 300
+    else: target_cals = tdee
 
-    # --- IOS CARDS (HTML Injection) ---
+    st.markdown("---")
     
-    # 1. The Summary Grid
+    # RESULT CARDS (Using CSS Grid for Pro Look)
     st.markdown(f"""
-    <div class="metric-container">
-        <div class="metric-box">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="pro-card">
             <div class="metric-label">BMI Score</div>
-            <div class="metric-value" style="color: {color}">{bmi:.1f}</div>
-            <div class="metric-sub" style="color: {color}">{category}</div>
+            <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
+            <div class="metric-sub">{status}</div>
         </div>
-        <div class="metric-box">
-            <div class="metric-label">Daily Needs</div>
+        <div class="pro-card">
+            <div class="metric-label">Maintenance (TDEE)</div>
             <div class="metric-value">{tdee}</div>
-            <div class="metric-sub" style="color: #8E8E93">kcal/day</div>
+            <div class="metric-sub">kcal / day</div>
         </div>
-        <div class="metric-box">
-            <div class="metric-label">Target Goal</div>
-            <div class="metric-value" style="color: #007AFF">{target}</div>
-            <div class="metric-sub" style="color: #007AFF">kcal/day</div>
-        </div>
+    </div>
+    <div class="pro-card" style="margin-top: 0px;">
+        <div class="metric-label">Recommended Target</div>
+        <div class="metric-value" style="color: #FFFFFF">{target_cals}</div>
+        <div class="metric-sub">kcal / day to reach goal</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 2. The Progress Bar
-    st.caption("BMI Scale (Asian Standard)")
-    st.progress(min(bmi/40, 1.0))
+    # DIET PLAN SECTION
+    st.markdown("#### Clinical Recommendations")
     
-    # 3. The Diet Card
     st.markdown(f"""
-    <div class="ios-card">
-        <h3 style="margin-top:0"> {emoji} Recommended Diet Plan</h3>
-        <p style="color:#666; font-size:14px; margin-bottom:20px;">
-            Strategy: <b>{tip}</b>
-        </p>
-    """, unsafe_allow_html=True)
-
-    # Close HTML div temporarily to insert Streamlit Tabs (Native widgets work better for interactivity)
-    
-    d_tab1, d_tab2, d_tab3, d_tab4 = st.tabs(["🍳 Breakfast", "🍛 Lunch", "🍎 Snack", "🍲 Dinner"])
-    
-    with d_tab1: st.info(b)
-    with d_tab2: st.warning(l)
-    with d_tab3: st.success(s)
-    with d_tab4: st.error(d)
-    
-    st.markdown("</div>", unsafe_allow_html=True) # Close ios-card
-
-else:
-    # Empty State
-    st.markdown("""
-    <div class="ios-card" style="text-align: center; padding: 40px;">
-        <h2 style="color: #C7C7CC;">👋</h2>
-        <h3 style="color: #333;">Welcome!</h3>
-        <p style="color: #8E8E93;">Enter your details in the sidebar to generate your personalized Indian health report.</p>
+    <div class="pro-card">
+        <h4 style="color: white; margin-top:0;">{plan['Goal']}</h4>
+        <p style="color: #AAA; font-size: 14px; margin-bottom: 20px;">Strategy: {plan['Strategy']}</p>
+        <div style="background-color: #262730; padding: 15px; border-radius: 8px; border-left: 4px solid {color_code};">
+            <p style="color: #DDD; white-space: pre-line; line-height: 1.6;">{plan['Diet']}</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 6. Sticky Footer ---
+# --- 6. Footer ---
 st.markdown("""
-    <div class="ios-footer">
-        <b>Neon Fix / Brokenerd</b> &nbsp;|&nbsp; Designed for Indian Health Standards
+    <div class="pro-footer">
+        NEON FIX / BROKENERD &copy; 2024<br>
+        Developed for Indian Demographics
     </div>
 """, unsafe_allow_html=True)
