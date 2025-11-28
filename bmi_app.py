@@ -1,298 +1,301 @@
 import streamlit as st
 
-# --- 1. Page Configuration ---
+# --- 1. Page Configuration (Wide Layout for Desktop, Auto-Stack for Mobile) ---
 st.set_page_config(
-    page_title="NeuHealth Pro",
-    page_icon="🧬",
-    layout="centered",
+    page_title="BodyMetrics Professional",
+    page_icon="🏥",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. Neumorphic Design System (CSS) ---
+# --- 2. Professional Design System (CSS) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    /* IMPORT CLEAN FONT */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     :root {
-        --bg-color: #E0E5EC;
-        --text-main: #4A5568;
-        --highlight: #ffffff;
-        --shadow: #a3b1c6;
-        --accent: #4D7CFE;
+        --primary: #2563EB; /* Professional Blue */
+        --bg-color: #F8FAFC; /* Light Slate Background */
+        --card-bg: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-gray: #64748B;
+        --border: #E2E8F0;
     }
 
-    /* GLOBAL RESET */
-    html, body, .stApp {
+    /* GENERAL APP STYLING */
+    .stApp {
         background-color: var(--bg-color);
-        font-family: 'Poppins', sans-serif;
-        color: var(--text-main);
-    }
-
-    /* HIDE STREAMLIT BRANDING */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-
-    /* NEUMORPHIC CARD (OUTSET) */
-    .neu-card {
-        background-color: var(--bg-color);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 9px 9px 16px var(--shadow), 
-                   -9px -9px 16px var(--highlight);
-        margin-bottom: 25px;
-        transition: transform 0.2s;
+        font-family: 'Inter', sans-serif;
     }
     
-    /* MEAL CARD SPECIFIC */
-    .meal-card {
-        background-color: var(--bg-color);
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 6px 6px 10px var(--shadow), 
-                   -6px -6px 10px var(--highlight);
-        height: 100%; /* For grid alignment */
-        border-left: 5px solid var(--accent);
+    /* HIDE DEFAULT STREAMLIT ELEMENTS */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+
+    /* INPUT FIELDS - CLEAN & SHARP */
+    .stNumberInput input, .stSelectbox div {
+        background-color: white;
+        color: var(--text-dark);
+        border-radius: 8px;
+        border: 1px solid var(--border);
     }
 
-    /* INPUT CONTAINER (INSET) */
-    .inset-container {
-        border-radius: 15px;
-        background: var(--bg-color);
-        box-shadow: inset 6px 6px 10px var(--shadow), 
-                    inset -6px -6px 10px var(--highlight);
-        padding: 20px;
-        margin-bottom: 20px;
+    /* CARD SYSTEM (Used for all results) */
+    .pro-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle professional shadow */
+        height: 100%;
+        transition: transform 0.2s ease;
+    }
+    .pro-card:hover {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 
     /* TYPOGRAPHY */
-    h1, h2, h3 { color: #2D3748; font-weight: 700; }
-    p { line-height: 1.6; font-size: 14px; }
-    .label-text { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #718096; }
-    .big-number { font-size: 32px; font-weight: 800; color: #2D3748; }
-
-    /* WIDGET OVERRIDES */
-    .stSlider > div > div > div { background-color: var(--accent) !important; }
-    .stSelectbox > div > div { 
-        background-color: var(--bg-color); 
-        border: none; 
-        box-shadow: 5px 5px 10px var(--shadow), -5px -5px 10px var(--highlight);
-        border-radius: 10px;
-    }
+    h1, h2, h3 { color: var(--text-dark); font-weight: 700; letter-spacing: -0.5px; }
+    p { color: var(--text-gray); font-size: 15px; line-height: 1.6; }
     
-    /* GRID LAYOUTS */
-    .results-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
+    .metric-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-gray);
+        font-weight: 600;
+        margin-bottom: 8px;
     }
-    .meals-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Stack on mobile, side-by-side on desktop */
-        gap: 20px;
+    .metric-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+    .metric-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
     }
 
-    /* BUTTON */
-    div.stButton > button {
-        width: 100%;
-        background-color: var(--bg-color);
-        color: var(--accent);
-        font-weight: 700;
-        border: none;
-        padding: 15px;
-        border-radius: 50px;
-        box-shadow: 6px 6px 10px var(--shadow), -6px -6px 10px var(--highlight);
-        transition: all 0.2s;
+    /* RESPONSIVE GRID FOR MEALS */
+    .meal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
     }
-    div.stButton > button:active {
-        box-shadow: inset 4px 4px 8px var(--shadow), inset -4px -4px 8px var(--highlight);
-        transform: scale(0.98);
+    .meal-item {
+        background: #F8FAFC;
+        border-left: 4px solid var(--primary);
+        padding: 16px;
+        border-radius: 8px;
+    }
+
+    /* BUTTON STYLING */
+    div.stButton > button {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    div.stButton > button:hover {
+        background-color: #1D4ED8; /* Darker Blue */
+        border: none;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Logic & Data ---
+# --- 3. Medical Logic (Backend) ---
 
-def get_health_data(bmi):
-    if bmi < 18.5: return "Underweight", "#3182CE" # Blue
-    elif 18.5 <= bmi <= 22.9: return "Normal", "#38A169" # Green
-    elif 23.0 <= bmi <= 24.9: return "Overweight", "#DD6B20" # Orange
-    else: return "Obese", "#E53E3E" # Red
+def get_clinical_data(bmi):
+    # Returns: Category, Hex Color, Text Color (for contrast)
+    if bmi < 18.5: return "Underweight", "#DBEAFE", "#1E40AF" # Light Blue bg, Dark Blue text
+    elif 18.5 <= bmi <= 22.9: return "Normal Weight", "#DCFCE7", "#166534" # Green
+    elif 23.0 <= bmi <= 24.9: return "Overweight", "#FEF3C7", "#92400E" # Yellow/Orange
+    else: return "Obese", "#FEE2E2", "#991B1B" # Red
 
-def calculate_tdee(weight, height_cm, age, gender, activity):
-    # Mifflin-St Jeor
+def calculate_metrics(weight, height_cm, age, gender, activity):
+    # 1. BMI
+    height_m = height_cm / 100
+    bmi = weight / (height_m ** 2)
+    
+    # 2. TDEE (Mifflin-St Jeor)
     bmr = (10 * weight) + (6.25 * height_cm) - (5 * age) + (5 if gender == "Male" else -161)
-    multipliers = {
-        "Sedentary (Desk Job)": 1.2,
-        "Light Active (1-3 days)": 1.375,
-        "Moderate Active (3-5 days)": 1.55,
-        "Very Active (6-7 days)": 1.725,
-        "Extra Active (Physical Job)": 1.9
+    act_map = {
+        "Sedentary (Office/Desk Job)": 1.2,
+        "Lightly Active (1-3 days/week)": 1.375,
+        "Moderately Active (3-5 days/week)": 1.55,
+        "Very Active (6-7 days/week)": 1.725,
+        "Extra Active (Physical Labor)": 1.9
     }
-    return int(bmr * multipliers.get(activity, 1.2))
+    tdee = int(bmr * act_map.get(activity, 1.2))
+    
+    return bmi, tdee
 
-def get_diet_stack(category):
-    # Returns structured dictionary for the stacks
+def get_diet_protocol(category):
     if category == "Underweight":
         return {
-            "Strategy": "Calorie Surplus (+300kcal)",
-            "Tip": "Focus on liquid calories and healthy fats.",
-            "Meals": {
-                "Breakfast": "2 Paneer Parathas + Curd OR 4 Eggs + Toast.",
-                "Lunch": "Rice bowl with Dal Tadka (Ghee), Mixed Veg, Salad.",
-                "Snack": "Banana Shake with Dates & Nuts.",
-                "Dinner": "3 Rotis with Chicken Curry or Paneer Butter Masala."
-            }
+            "Protocol": "Caloric Surplus (+300 kcal)",
+            "Focus": "Nutrient Density & Frequency",
+            "Meals": [
+                ("Breakfast", "2 Paneer Parathas + Curd", "High Protein/Carb"),
+                ("Lunch", "Rice, Dal Tadka (Ghee), Mixed Veg", "Calorie Dense"),
+                ("Snack", "Banana Shake with Nuts & Dates", "Healthy Fats"),
+                ("Dinner", "3 Rotis + Chicken/Paneer Curry", "Sustained Energy")
+            ]
         }
-    elif category == "Normal":
+    elif category == "Normal Weight":
         return {
-            "Strategy": "Maintenance & Balance",
-            "Tip": "Ensure sufficient protein intake (1g per kg bodyweight).",
-            "Meals": {
-                "Breakfast": "Poha/Upma with lots of veggies OR Idli Sambar.",
-                "Lunch": "2 Phulkas, Seasonal Sabzi, Dal, Curd.",
-                "Snack": "Fruit Platter (Papaya/Apple) or Green Tea.",
-                "Dinner": "2 Multigrain Rotis, Bottle Gourd (Lauki) Sabzi."
-            }
+            "Protocol": "Maintenance",
+            "Focus": "Macronutrient Balance",
+            "Meals": [
+                ("Breakfast", "Vegetable Poha/Upma or Idli", "Light Start"),
+                ("Lunch", "2 Rotis, Dal, Seasonal Sabzi, Salad", "Fiber Rich"),
+                ("Snack", "Whole Fruit or Green Tea", "Antioxidants"),
+                ("Dinner", "Multigrain Roti + Lauki/Torai", "Easy Digestion")
+            ]
         }
     elif category == "Overweight":
         return {
-            "Strategy": "Calorie Deficit (-500kcal)",
-            "Tip": "Volume eating: Fill half your plate with vegetables.",
-            "Meals": {
-                "Breakfast": "Oats Porridge (No sugar) OR Moong Dal Chilla.",
-                "Lunch": "1 Multigrain Roti, Boiled Dal, Big Bowl of Cucumber Salad.",
-                "Snack": "Roasted Makhana or Buttermilk (Chaas).",
-                "Dinner": "Grilled Paneer/Tofu Salad or Clear Soup."
-            }
+            "Protocol": "Caloric Deficit (-500 kcal)",
+            "Focus": "Volume Eating & High Fiber",
+            "Meals": [
+                ("Breakfast", "Oats Porridge or Moong Dal Chilla", "Complex Carbs"),
+                ("Lunch", "1 Roti + Dal + Large Salad Bowl", "Satiety Focus"),
+                ("Snack", "Roasted Makhana or Buttermilk", "Low Calorie"),
+                ("Dinner", "Grilled Protein Salad or Soup", "Light End")
+            ]
         }
     else: # Obese
         return {
-            "Strategy": "Aggressive Deficit",
-            "Tip": "Eliminate sugar, fried foods, and refined flour completely.",
-            "Meals": {
-                "Breakfast": "Spinach & Cucumber Juice + 2 Egg Whites.",
-                "Lunch": "1 Jowar Roti, Leafy Greens (Saag), Raita.",
-                "Snack": "Black Coffee or Green Tea + 5 Almonds.",
-                "Dinner": "Lentil Soup with sautéed vegetables (No Rice/Roti)."
-            }
+            "Protocol": "Aggressive Reduction",
+            "Focus": "Low Carb & Anti-Inflammatory",
+            "Meals": [
+                ("Breakfast", "Veg Juice + Egg Whites", "Protein Kick"),
+                ("Lunch", "Jowar Roti + Leafy Greens + Raita", "Low Glycemic"),
+                ("Snack", "Green Tea + 5 Almonds", "Metabolism"),
+                ("Dinner", "Lentil Soup + Sautéed Veggies", "No Heavy Carbs")
+            ]
         }
 
-# --- 4. Main UI Layout ---
+# --- 4. UI Layout ---
 
 # Header
-c1, c2 = st.columns([1, 6])
-with c1:
-    st.markdown("<h1 style='font-size: 50px;'>🧬</h1>", unsafe_allow_html=True)
-with c2:
-    st.markdown("<h1>NeuHealth <span style='color:#4D7CFE'>Pro</span></h1>", unsafe_allow_html=True)
-    st.caption("Indian Metric Standard • Neumorphic Design")
+st.markdown("<h3>🏥 BodyMetrics <span style='color:#2563EB'>Pro</span></h3>", unsafe_allow_html=True)
+st.markdown("<p>Professional Health Assessment • Indian Standards</p>", unsafe_allow_html=True)
+st.divider()
 
-st.write("")
-
-# Inputs Container
-st.markdown('<div class="neu-card">', unsafe_allow_html=True)
-st.markdown("### 👤 User Profile")
-
-col_a, col_b = st.columns(2)
-with col_a:
-    gender = st.selectbox("Gender", ["Male", "Female"])
-    age = st.slider("Age", 10, 90, 25)
-with col_b:
-    activity = st.selectbox("Activity", [
-        "Sedentary (Desk Job)",
-        "Light Active (1-3 days)",
-        "Moderate Active (3-5 days)",
-        "Very Active (6-7 days)",
-        "Extra Active (Physical Job)"
-    ])
-    weight = st.slider("Weight (kg)", 30, 200, 72)
-
-st.markdown("---")
-st.markdown("### 📏 Height")
-h1, h2 = st.columns(2)
-with h1:
-    ft = st.slider("Feet", 3, 7, 5)
-with h2:
-    inc = st.slider("Inches", 0, 11, 7)
-
-# Calculation
-height_cm = (ft * 12 + inc) * 2.54
-height_m = height_cm / 100
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Button
-if st.button("CALCULATE PLAN"):
+# --- INPUT SECTION (Responsive Columns) ---
+# We use standard text/number inputs for precision
+with st.container():
+    c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
     
-    # Process
-    bmi = weight / (height_m ** 2)
-    tdee = calculate_tdee(weight, height_cm, age, gender, activity)
-    cat, color = get_health_data(bmi)
-    data = get_diet_stack(cat)
+    with c1:
+        gender = st.selectbox("Gender", ["Male", "Female"])
+        age = st.number_input("Age (Years)", 15, 90, 25)
     
-    if cat in ["Overweight", "Obese"]: target = tdee - 500
-    elif cat == "Underweight": target = tdee + 300
-    else: target = tdee
+    with c2:
+        weight = st.number_input("Weight (kg)", 30.0, 200.0, 72.0, format="%.1f")
+        activity = st.selectbox("Activity Level", [
+            "Sedentary (Office/Desk Job)",
+            "Lightly Active (1-3 days/week)",
+            "Moderately Active (3-5 days/week)",
+            "Very Active (6-7 days/week)",
+            "Extra Active (Physical Labor)"
+        ])
+        
+    with c3:
+        height_ft = st.number_input("Height (Feet)", 3, 7, 5)
+        height_in = st.number_input("Height (Inches)", 0, 11, 7)
+        # Internal Calculation
+        height_cm = (height_ft * 12 + height_in) * 2.54
+        
+    with c4:
+        st.write("") # Spacer to align button
+        st.write("") 
+        if st.button("Generate Assessment"):
+            calc_trigger = True
+        else:
+            calc_trigger = False
 
-    # --- RESULTS SECTION ---
+# --- 5. RESULTS SECTION ---
+if calc_trigger:
+    # Calculations
+    bmi, tdee = calculate_metrics(weight, height_cm, age, gender, activity)
+    cat_text, cat_bg, cat_color = get_clinical_data(bmi)
+    diet_data = get_diet_protocol(cat_text)
+    
+    if cat_text in ["Overweight", "Obese"]: target_cals = tdee - 500
+    elif cat_text == "Underweight": target_cals = tdee + 300
+    else: target_cals = tdee
+
+    st.divider()
+    
+    # METRICS ROW
+    m1, m2, m3 = st.columns(3)
+    
+    with m1:
+        st.markdown(f"""
+        <div class="pro-card">
+            <div class="metric-label">Clinical BMI</div>
+            <div class="metric-value">{bmi:.1f}</div>
+            <div class="metric-badge" style="background-color: {cat_bg}; color: {cat_color};">
+                {cat_text}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with m2:
+        st.markdown(f"""
+        <div class="pro-card">
+            <div class="metric-label">Maintenance (TDEE)</div>
+            <div class="metric-value">{tdee}</div>
+            <p style="margin-top:5px; font-size:13px;">Daily calories to maintain weight</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with m3:
+        st.markdown(f"""
+        <div class="pro-card" style="border-color: #2563EB;">
+            <div class="metric-label">Target Goal</div>
+            <div class="metric-value" style="color: #2563EB;">{target_cals}</div>
+            <p style="margin-top:5px; font-size:13px; color: #2563EB;"><b>{diet_data['Protocol']}</b></p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # DIET PLAN ROW
     st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("#### 📋 Recommended Protocol")
+    st.markdown(f"<p>Clinical Focus: <b>{diet_data['Focus']}</b></p>", unsafe_allow_html=True)
     
-    # 1. Metrics Grid
-    st.markdown(f"""
-    <div class="results-grid">
-        <div class="neu-card" style="text-align:center; border-bottom: 5px solid {color}">
-            <div class="label-text">Your BMI</div>
-            <div class="big-number" style="color: {color}">{bmi:.1f}</div>
-            <div style="color: {color}; font-weight:600">{cat}</div>
-        </div>
-        <div class="neu-card" style="text-align:center;">
-            <div class="label-text">TDEE</div>
-            <div class="big-number">{tdee}</div>
-            <div style="font-size:12px">Maintenance Cals</div>
-        </div>
-        <div class="neu-card" style="text-align:center;">
-            <div class="label-text">Target Goal</div>
-            <div class="big-number" style="color: #4D7CFE">{target}</div>
-            <div style="font-size:12px">Daily Limit</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 2. Strategy Banner (Inset Style)
-    st.markdown(f"""
-    <div class="inset-container">
-        <h3 style="margin:0; color: {color}">Strategy: {data['Strategy']}</h3>
-        <p style="margin-top: 5px; color: #666;">💡 {data['Tip']}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 3. Meals Grid (The Stacks)
-    st.markdown("### 🥗 Recommended Meal Plan")
+    # Constructing the Grid HTML
+    grid_html = '<div class="meal-grid">'
     
-    meals = data['Meals']
+    for meal_name, food, note in diet_data['Meals']:
+        grid_html += f"""
+        <div class="pro-card meal-item">
+            <div class="metric-label">{meal_name}</div>
+            <div style="font-weight: 600; color: #1E293B; margin-top: 4px;">{food}</div>
+            <div style="font-size: 13px; color: #64748B; margin-top: 8px;">• {note}</div>
+        </div>
+        """
     
-    # We use f-strings carefully to inject meal data into HTML
-    st.markdown(f"""
-    <div class="meals-grid">
-        <div class="meal-card">
-            <div class="label-text">🍳 BREAKFAST</div>
-            <p style="font-weight: 500; margin-top: 10px;">{meals['Breakfast']}</p>
-        </div>
-        <div class="meal-card">
-            <div class="label-text">🍛 LUNCH</div>
-            <p style="font-weight: 500; margin-top: 10px;">{meals['Lunch']}</p>
-        </div>
-        <div class="meal-card">
-            <div class="label-text">🍎 SNACK</div>
-            <p style="font-weight: 500; margin-top: 10px;">{meals['Snack']}</p>
-        </div>
-        <div class="meal-card">
-            <div class="label-text">🍲 DINNER</div>
-            <p style="font-weight: 500; margin-top: 10px;">{meals['Dinner']}</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    grid_html += '</div>'
+    st.markdown(grid_html, unsafe_allow_html=True)
 
 # Footer
-st.markdown("<br><br><div style='text-align:center; color:#A0AEC0; font-size:12px;'>Neon Fix / Brokenerd © 2025</div>", unsafe_allow_html=True)
+st.markdown("<br><br><br>", unsafe_allow_html=True)
+st.markdown("""
+<div style="text-align: center; color: #94A3B8; font-size: 12px; border-top: 1px solid #E2E8F0; padding-top: 20px;">
+    Assessment Tool v2.1 • Neon Fix / Brokenerd • Not for medical diagnosis
+</div>
+""", unsafe_allow_html=True)
