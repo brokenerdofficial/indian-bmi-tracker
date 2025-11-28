@@ -37,7 +37,7 @@ st.markdown("""
         border-radius: 16px;
         padding: 24px;
         margin-bottom: 16px;
-        height: 100%; /* Important for grid alignment */
+        height: 100%;
         box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
         animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     }
@@ -67,7 +67,7 @@ st.markdown("""
         font-size: 15px;
         font-weight: 500;
         line-height: 1.6;
-        white-space: pre-line; /* Allows newlines to render */
+        white-space: pre-line;
     }
 
     /* Button */
@@ -120,7 +120,6 @@ def calculate_tdee(weight, height_cm, age, gender, activity):
     return int(bmr * multipliers.get(activity, 1.2))
 
 def get_plan_text(category):
-    # Standardized dictionary structure for all categories
     if category == "Underweight":
         return {
             "Goal": "Hypertrophy / Weight Gain",
@@ -175,20 +174,24 @@ with col_title:
 
 st.markdown("---")
 
-# INPUT SECTION (Stacked Rows)
+# INPUT SECTION
 st.markdown("#### Patient Details")
 
-# Row 1
-c1, c2, c3 = st.columns(3)
-with c1: gender = st.selectbox("Gender", ["Male", "Female"])
-with c2: age = st.number_input("Age", 10, 100, 25)
-with c3: weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
+# 1. Gender (Full Row)
+gender = st.selectbox("Gender", ["Male", "Female"])
 
-# Row 2
-c4, c5, c6 = st.columns([1, 1, 2])
-with c4: height_ft = st.number_input("Height (Ft)", 3, 8, 5)
-with c5: height_in = st.number_input("Height (In)", 0, 11, 7)
-with c6: activity = st.selectbox("Activity Level", [
+# 2. Age & Weight (Shared Row)
+c1, c2 = st.columns(2)
+with c1: age = st.number_input("Age", 10, 100, 25)
+with c2: weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
+
+# 3. Height Fields (Shared Row)
+c3, c4 = st.columns(2)
+with c3: height_ft = st.number_input("Height (Ft)", 3, 8, 5)
+with c4: height_in = st.number_input("Height (In)", 0, 11, 7)
+
+# 4. Activity (Full Row)
+activity = st.selectbox("Activity Level", [
     "Sedentary (Office Job)", "Lightly Active (1-3 days)", 
     "Moderately Active (3-5 days)", "Very Active (6-7 days)", 
     "Extra Active (Physical Job)"
@@ -214,7 +217,7 @@ if calc:
 
     st.markdown("---")
     
-    # 1. BMI & TDEE (Side by Side)
+    # 1. BMI & TDEE (Side by Side in one row)
     res_c1, res_c2 = st.columns(2)
     with res_c1:
         st.markdown(f"""
@@ -242,10 +245,9 @@ if calc:
     </div>
     """, unsafe_allow_html=True)
 
-    # 3. Diet Plan (2x2 Grid using Streamlit Columns)
+    # 3. Diet Plan (2x2 Grid)
     st.markdown("#### Clinical Diet Recommendations")
     
-    # Row 1: Breakfast & Lunch
     d1, d2 = st.columns(2)
     with d1:
         st.markdown(f"""
@@ -262,7 +264,6 @@ if calc:
         </div>
         """, unsafe_allow_html=True)
         
-    # Row 2: Snacks & Dinner
     d3, d4 = st.columns(2)
     with d3:
         st.markdown(f"""
