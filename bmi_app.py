@@ -190,7 +190,7 @@ def get_plan_text(category):
 
 col_logo, col_title = st.columns([1, 4])
 with col_logo:
-    if os.path.exists("logo.png"): st.image("logo.png", width=150 display: block;
+    if os.path.exists("logo.png"): st.image("logo.png", width=150, display: block;
   margin-left: auto;
   margin-right: auto;
   width: 50%;)
@@ -307,4 +307,5 @@ st.markdown("""
         Developed for Indian Demographics
     </div>
 """, unsafe_allow_html=True)
+
 
