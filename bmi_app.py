@@ -24,18 +24,20 @@ st.markdown("""
         border-color: #41444C !important;
     }
     
-    /* --- MOBILE COLUMN FIX (For Inputs) --- */
-    /* Forces st.columns to stay side-by-side (50% width) on small screens */
+    /* --- MOBILE GRID SYSTEM FOR INPUTS --- */
+    /* This simulates a Grid System for Streamlit Columns on Mobile */
     @media (max-width: 768px) {
         div[data-testid="column"] {
             width: 50% !important;
             flex: 1 1 auto !important;
             min-width: 0px !important;
         }
-        /* Fix overlapping text in small inputs */
+        /* Adjust spacing for small screens */
+        div[data-testid="column"] > div {
+            width: 100% !important;
+        }
         .stNumberInput input {
             padding-right: 0px !important; 
-            min-width: 0px !important;
         }
     }
 
@@ -87,14 +89,6 @@ st.markdown("""
         white-space: pre-line;
     }
     
-    /* Grid Container for Mobile Cards */
-    .grid-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-
     /* Button */
     div.stButton > button {
         background-color: #FFFFFF;
@@ -205,12 +199,12 @@ st.markdown("#### Patient Details")
 # 1. Gender (Full Row)
 gender = st.selectbox("Gender", ["Male", "Female"])
 
-# 2. Age & Weight (Side-by-Side)
+# 2. Age & Weight (Side-by-Side 50% Grid)
 c1, c2 = st.columns(2)
 with c1: age = st.number_input("Age", 10, 100, 25)
 with c2: weight = st.number_input("Weight (kg)", 1.0, 300.0, 72.0)
 
-# 3. Height Fields (Side-by-Side)
+# 3. Height Fields (Side-by-Side 50% Grid)
 c3, c4 = st.columns(2)
 with c3: height_ft = st.number_input("Height (Ft)", 3, 8, 5)
 with c4: height_in = st.number_input("Height (In)", 0, 11, 7)
@@ -244,7 +238,7 @@ if calc:
     
     # --- 1. BMI & TDEE (HTML Grid - Side by Side guaranteed) ---
     st.markdown(f"""
-    <div class="grid-container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
         <div class="pro-card" style="animation-delay: 0.1s;">
             <div class="metric-label">BMI Score</div>
             <div class="metric-value" style="color: {color_code}">{bmi:.1f}</div>
@@ -274,7 +268,7 @@ if calc:
     dn_text = meals['Dinner'].replace('\n', '<br>')
 
     st.markdown(f"""
-    <div class="grid-container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div class="pro-card" style="animation-delay: 0.4s;">
             <div class="metric-label" style="color: #4FC3F7;">Breakfast</div>
             <div class="meal-text">{bf_text}</div>
@@ -283,9 +277,6 @@ if calc:
             <div class="metric-label" style="color: #FFA726;">Lunch</div>
             <div class="meal-text">{ln_text}</div>
         </div>
-    </div>
-
-    <div class="grid-container">
         <div class="pro-card" style="animation-delay: 0.6s;">
             <div class="metric-label" style="color: #AB47BC;">Snacks</div>
             <div class="meal-text">{sn_text}</div>
