@@ -187,7 +187,7 @@ def get_plan_text(category):
 col_logo, col_title = st.columns([1, 4])
 with col_logo:
     if os.path.exists("logo.png"):
-        st.image("logo.png", width=80)
+        st.image("logo.png", width=120)
     else:
         # Fallback text if no logo
         st.markdown("<h2 style='color:#FFF;'>NF</h2>", unsafe_allow_html=True)
@@ -284,4 +284,5 @@ st.markdown("""
         NEON FIX / BROKENERD &copy; 2024<br>
         Developed for Indian Demographics
     </div>
+
 """, unsafe_allow_html=True)
